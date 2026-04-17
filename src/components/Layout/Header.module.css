@@ -1,0 +1,171 @@
+.header {
+  height: 60px;
+  background: rgba(5, 10, 18, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--s6);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  gap: var(--s6);
+}
+
+/* ── Search ─────────────────────────────────────────────────────── */
+.searchBar {
+  display: flex;
+  align-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-lg);
+  padding: 7px 14px;
+  gap: 8px;
+  flex: 1;
+  max-width: 380px;
+  transition: all var(--t-normal);
+}
+.searchBar:focus-within {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--border-cyan);
+  box-shadow: 0 0 0 3px rgba(6,182,212,0.08);
+}
+
+.searchIcon {
+  color: var(--text-muted);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  width: 100%;
+  outline: none;
+  font-family: var(--font-main);
+}
+.searchInput::placeholder { color: var(--text-muted); }
+
+.kbdHint {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Right section ──────────────────────────────────────────────── */
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+}
+
+/* Live badge */
+.liveBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.25);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--emerald);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-mono);
+}
+
+.livePulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+  animation: pulse-ring 2s infinite;
+}
+
+/* Notification button */
+.iconBtn {
+  position: relative;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-md);
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--t-fast);
+}
+.iconBtn:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-primary);
+  border-color: var(--border-mid);
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  background: var(--alert-red);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: #fff;
+  border: 2px solid var(--bg-app);
+}
+
+/* Avatar */
+.avatarBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-lg);
+  padding: 4px 10px 4px 4px;
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+.avatarBtn:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--border-cyan);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-md);
+  background: linear-gradient(135deg, var(--cyan-deep), var(--violet));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.avatarName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}

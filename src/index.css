@@ -1,0 +1,295 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ── Core Backgrounds ─────────────────────────────────────────────── */
+  --bg-app:         #050A12;
+  --bg-sidebar:     #070E1A;
+  --bg-card:        #0D1526;
+  --bg-card-hover:  #111D35;
+  --bg-input:       #0A1220;
+  --bg-glass:       rgba(13, 21, 38, 0.7);
+
+  /* ── Accent Palette ───────────────────────────────────────────────── */
+  --cyan-primary:   #06B6D4;
+  --cyan-lite:      #22D3EE;
+  --cyan-deep:      #0891B2;
+  --cyan-glow:      rgba(6, 182, 212, 0.25);
+  --cyan-glow-lg:   rgba(6, 182, 212, 0.12);
+
+  --violet:         #8B5CF6;
+  --violet-glow:    rgba(139, 92, 246, 0.2);
+  --amber:          #F59E0B;
+  --amber-glow:     rgba(245, 158, 11, 0.2);
+  --emerald:        #10B981;
+  --emerald-glow:   rgba(16, 185, 129, 0.2);
+
+  /* ── Alert Colors ─────────────────────────────────────────────────── */
+  --alert-red:      #EF4444;
+  --alert-red-bg:   rgba(239, 68, 68, 0.08);
+  --alert-red-glow: rgba(239, 68, 68, 0.2);
+  --success-green:  #10B981;
+
+  /* ── Text ─────────────────────────────────────────────────────────── */
+  --text-primary:   #F0F6FF;
+  --text-secondary: #94A3B8;
+  --text-muted:     #4E6080;
+
+  /* ── Borders ──────────────────────────────────────────────────────── */
+  --border-light:   rgba(255, 255, 255, 0.04);
+  --border-mid:     rgba(255, 255, 255, 0.08);
+  --border-cyan:    rgba(34, 211, 238, 0.25);
+  --border-card:    rgba(255, 255, 255, 0.06);
+
+  /* ── Spacing ──────────────────────────────────────────────────────── */
+  --s1: 0.25rem;
+  --s2: 0.5rem;
+  --s3: 0.75rem;
+  --s4: 1rem;
+  --s5: 1.25rem;
+  --s6: 1.5rem;
+  --s8: 2rem;
+  --s10: 2.5rem;
+
+  /* keep old names for compat */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* ── Fonts ────────────────────────────────────────────────────────── */
+  --font-main:    'Inter', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  /* ── Radii ────────────────────────────────────────────────────────── */
+  --r-sm:  6px;
+  --r-md:  10px;
+  --r-lg:  14px;
+  --r-xl:  20px;
+  --r-full: 9999px;
+
+  /* ── Shadows ──────────────────────────────────────────────────────── */
+  --shadow-card:   0 4px 24px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-cyan:   0 0 24px rgba(6,182,212,0.18), 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-glow:   0 0 40px rgba(6,182,212,0.1);
+
+  /* ── Transitions ──────────────────────────────────────────────────── */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-fast:   0.15s var(--ease);
+  --t-normal: 0.25s var(--ease);
+  --t-slow:   0.4s var(--ease);
+}
+
+/* ════════════════════════ RESET & BASE ════════════════════════════════ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html { font-size: 16px; }
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(6,182,212,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139,92,246,0.03) 0%, transparent 60%);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+a {
+  color: var(--cyan-lite);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+a:hover { text-decoration: none; color: var(--cyan-primary); }
+
+button {
+  cursor: pointer;
+  font-family: var(--font-main);
+  transition: all var(--t-normal);
+}
+
+/* ════════════════════════ ANIMATIONS ══════════════════════════════════ */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 var(--cyan-glow); }
+  70%  { box-shadow: 0 0 0 8px rgba(6,182,212,0); }
+  100% { box-shadow: 0 0 0 0 rgba(6,182,212,0); }
+}
+
+@keyframes bar-grow {
+  from { width: 0; }
+  to   { width: var(--target-width, 100%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
+}
+
+@keyframes glow-border {
+  0%, 100% { border-color: rgba(34, 211, 238, 0.2); }
+  50%       { border-color: rgba(34, 211, 238, 0.5); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════ SCROLLBAR ═══════════════════════════════════ */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(255,255,255,0.08); border-radius: var(--r-full); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+
+/* ════════════════════════ UTILITY CLASSES ═════════════════════════════ */
+.animate-in    { animation: fadeInUp var(--t-slow) both; }
+.animate-scale { animation: fadeInScale var(--t-slow) both; }
+
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glow-cyan  { box-shadow: var(--shadow-cyan); }
+.glow-card  { box-shadow: var(--shadow-card); }
+
+/* ════════════════════════ BUTTON STYLES ═══════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: var(--r-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  transition: all var(--t-normal);
+}
+
+.btn-ghost {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-mid);
+  color: var(--text-secondary);
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-primary);
+  border-color: var(--border-mid);
+}
+
+.btn-cyan {
+  background: linear-gradient(135deg, var(--cyan-deep) 0%, var(--cyan-primary) 100%);
+  color: #000;
+  box-shadow: 0 2px 12px var(--cyan-glow);
+}
+.btn-cyan:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 4px 20px var(--cyan-glow);
+  transform: translateY(-1px);
+}
+.btn-cyan:disabled {
+  background: var(--bg-card-hover);
+  color: var(--text-muted);
+  box-shadow: none;
+  transform: none;
+}
+
+/* ════════════════════════ CHIP / BADGE ════════════════════════════════ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ════════════════════════ CARD BASE ═══════════════════════════════════ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--t-normal), box-shadow var(--t-normal);
+}
+.card:hover {
+  border-color: rgba(255,255,255,0.09);
+  box-shadow: var(--shadow-card), 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+/* ════════════════════════ KBD ════════════════════════════════════════ */
+kbd {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border-mid);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+}
+
+/* ════════════════════════ LOADING SPIN ════════════════════════════════ */
+.spin { animation: spin 0.9s linear infinite; }
+
+/* ════════════════════════ LOADER SCREEN ═══════════════════════════════ */
+.loader-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 55vh;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  animation: fadeInUp 0.4s both;
+}
+
+/* ════════════════════════ ERROR BLOCK ════════════════════════════════ */
+.error-block {
+  padding: 2rem;
+  color: var(--alert-red);
+  background: var(--alert-red-bg);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--r-lg);
+  margin: 2rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ════════════════════════ RECHARTS OVERRIDES ══════════════════════════ */
+.recharts-pie-sector:focus { outline: none; }
+.recharts-tooltip-wrapper  { outline: none; }

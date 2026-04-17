@@ -1,0 +1,30 @@
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-app);
+  overflow: hidden;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.pageContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s6);
+  scroll-behavior: smooth;
+}
+
+/* responsive padding */
+@media (max-width: 1280px) {
+  .pageContent { padding: var(--s5); }
+}
+@media (max-width: 900px) {
+  .pageContent { padding: var(--s4); }
+}
