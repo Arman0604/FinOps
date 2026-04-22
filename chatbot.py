@@ -228,13 +228,19 @@ def _build_system_prompt(ctx: dict) -> str:
     today = date.today().strftime("%B %d, %Y")
     intro = _SYSTEM_INTRO.format(today=today)
 
+    mom_change = (
+        f"{((ctx['mtd_total_usd'] - ctx['prev_month_total_usd']) / ctx['prev_month_total_usd'] * 100):+.1f}% (note: MTD is partial)"
+        if ctx['prev_month_total_usd']
+        else "N/A (no previous month data)"
+    )
+
     ctx_block = f"""
 ## Live FinOps Data Snapshot (as of {today})
 
 ### Monthly Spend
 - MTD Total: ${ctx['mtd_total_usd']:,.2f}
 - Previous Month Total: ${ctx['prev_month_total_usd']:,.2f}
-- MoM Change: {((ctx['mtd_total_usd'] - ctx['prev_month_total_usd']) / ctx['prev_month_total_usd'] * 100):+.1f}% (note: MTD is partial)
+- MoM Change: {mom_change}
 
 ### Spend by Cloud Provider
 {json.dumps(ctx['spend_by_provider'], indent=2)}

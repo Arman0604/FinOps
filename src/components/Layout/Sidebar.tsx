@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, TriangleAlert, TrendingUp, Zap } from 'lucide-react';
+import { LayoutDashboard, TriangleAlert, TrendingUp, Zap, Upload } from 'lucide-react';
 import styles from './Sidebar.module.css';
 
 const Sidebar: React.FC = () => {
@@ -8,6 +8,7 @@ const Sidebar: React.FC = () => {
     { name: 'Command Center',  path: '/',               icon: <LayoutDashboard className={styles.navIcon} /> },
     { name: 'Anomaly Watch',   path: '/anomaly-watch',  icon: <TriangleAlert   className={styles.navIcon} />, badge: true },
     { name: 'Budget Forecast', path: '/budget-forecast', icon: <TrendingUp     className={styles.navIcon} /> },
+    { name: 'Data Upload',    path: '/data-upload',      icon: <Upload          className={styles.navIcon} /> },
   ];
 
   return (

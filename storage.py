@@ -100,6 +100,20 @@ CREATE TABLE IF NOT EXISTS budgets (
     created_at  TEXT    NOT NULL
 );
 
+-- Upload history (tracks each CSV upload)
+CREATE TABLE IF NOT EXISTS upload_history (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    filename        TEXT    NOT NULL,
+    uploaded_at     TEXT    NOT NULL,
+    total_rows      INTEGER NOT NULL DEFAULT 0,
+    total_cost      REAL    NOT NULL DEFAULT 0,
+    anomaly_count   INTEGER NOT NULL DEFAULT 0,
+    savings         REAL    NOT NULL DEFAULT 0,
+    detection_rate  REAL    NOT NULL DEFAULT 0,
+    providers       TEXT,               -- JSON array
+    severity_breakdown TEXT             -- JSON object
+);
+
 -- Performance indexes
 CREATE INDEX IF NOT EXISTS idx_daily_date     ON daily_billing(date);
 CREATE INDEX IF NOT EXISTS idx_daily_provider ON daily_billing(provider, date);

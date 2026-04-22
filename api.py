@@ -172,6 +172,24 @@ def get_summary():
     mtd_df   = get_total_daily_spend(start_date=mtd_start, end_date=today_str)
     mtd_total = _safe_float(mtd_df["cost_usd"].sum()) if not mtd_df.empty else 0.0
 
+    # ── Fallback: if current month has no data, use the latest month in DB ────
+    if mtd_total == 0:
+        with get_conn(DB_PATH) as conn:
+            latest_row = conn.execute(
+                "SELECT MAX(date) as max_date FROM daily_billing"
+            ).fetchone()
+        if latest_row and latest_row["max_date"]:
+            latest_date = datetime.strptime(latest_row["max_date"], "%Y-%m-%d").date()
+            mtd_start = latest_date.replace(day=1).isoformat()
+            today_str = latest_date.isoformat()
+            # Recalculate prev month relative to latest data month
+            prev_last  = latest_date.replace(day=1) - timedelta(days=1)
+            prev_start = prev_last.replace(day=1).isoformat()
+            prev_end   = prev_last.isoformat()
+            # Re-query
+            mtd_df    = get_total_daily_spend(start_date=mtd_start, end_date=today_str)
+            mtd_total = _safe_float(mtd_df["cost_usd"].sum()) if not mtd_df.empty else 0.0
+
     # ── Previous month spend ──────────────────────────────────────────────────
     prev_df   = get_total_daily_spend(start_date=prev_start, end_date=prev_end)
     prev_total = _safe_float(prev_df["cost_usd"].sum()) if not prev_df.empty else 0.0
@@ -229,11 +247,11 @@ def get_summary():
             })
 
     # ── Spend forecast: pair last 7 actual days with next 7 predicted ────────
-    # Use yesterday as end so today's incomplete spend doesn't skew the bar,
-    # and use 7 days back so we get a full Mon-Sun week without gaps.
-    yesterday_str = (date.today() - timedelta(days=1)).isoformat()
-    week_ago_str  = (date.today() - timedelta(days=7)).isoformat()
-    hist_df = get_total_daily_spend(start_date=week_ago_str, end_date=yesterday_str)
+    # Use the (possibly fallback) today_str so historical CSVs still populate the chart
+    _ref_date = datetime.strptime(today_str, "%Y-%m-%d").date()
+    yesterday_str = (_ref_date - timedelta(days=1)).isoformat()
+    week_ago_str  = (_ref_date - timedelta(days=7)).isoformat()
+    hist_df = get_total_daily_spend(start_date=week_ago_str, end_date=today_str)
 
     DAY_ABBR = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
@@ -837,6 +855,286 @@ async def chat_endpoint(req: ChatRequest):
     except Exception as exc:
         log.error("Chat endpoint error: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  POST /api/upload-csv   — CSV upload + streaming anomaly detection
+#  GET  /api/upload-status — Live upload progress
+#  POST /api/upload-reset  — Reset upload state
+# ══════════════════════════════════════════════════════════════════════════════
+
+from fastapi import UploadFile, File
+from stream_detector import (
+    validate_csv, run_streaming_detection,
+    get_upload_state, reset_upload_state,
+)
+
+
+@app.post("/api/upload-csv", tags=["upload"])
+async def upload_csv(background_tasks: BackgroundTasks, file: UploadFile = File(...)):
+    """
+    Upload a cloud billing CSV for real-time streaming anomaly detection.
+
+    Required columns: date, provider, service, category, team, environment,
+                      region, cost_usd
+
+    Returns immediately — poll GET /api/upload-status for live progress.
+    """
+    state = get_upload_state()
+    if state["status"] not in ("idle", "complete", "error"):
+        return JSONResponse(
+            status_code=202,
+            content={
+                "status": "already_running",
+                "message": "An upload is already in progress. Reset first.",
+            },
+        )
+
+    # Read file bytes
+    file_bytes = await file.read()
+    filename = file.filename or "upload.csv"
+
+    # Validate CSV structure
+    ok, err_msg, row_count = validate_csv(file_bytes, filename)
+    if not ok:
+        return JSONResponse(
+            status_code=400,
+            content={"status": "validation_error", "message": err_msg},
+        )
+
+    log.info("CSV upload accepted: %s (%d rows)", filename, row_count)
+
+    # Kick off background streaming detection
+    background_tasks.add_task(run_streaming_detection, file_bytes, filename)
+
+    return {
+        "status":     "started",
+        "message":    f"Upload accepted. Processing {row_count:,} rows...",
+        "filename":   filename,
+        "total_rows": row_count,
+    }
+
+
+@app.get("/api/upload-status", tags=["upload"])
+def upload_status():
+    """
+    Poll this endpoint for live upload progress.
+
+    Returns:
+    {
+      status:           "idle" | "validating" | "loading" | "detecting" | "streaming" | "complete" | "error",
+      total_rows:       int,
+      processed_rows:   int,
+      anomaly_count:    int,
+      current_row:      { date, provider, service, team, cost_usd } | null,
+      recent_anomalies: [ { id, date, provider, service, team, severity, ... } ],
+      error:            str | null,
+      filename:         str | null,
+      started_at:       str | null,
+      completed_at:     str | null
+    }
+    """
+    return get_upload_state()
+
+
+@app.post("/api/upload-reset", tags=["upload"])
+def upload_reset():
+    """Reset upload state and cancel any running upload."""
+    reset_upload_state()
+    return {"status": "reset", "message": "Upload state cleared."}
+
+
+@app.post("/api/clear-data", tags=["upload"])
+def clear_data():
+    """
+    Clear ALL billing data, detected anomalies, and upload history from the database.
+    Resets the dashboard to a blank state.
+    """
+    with get_conn(DB_PATH) as conn:
+        conn.execute("DELETE FROM detected_anomalies")
+        conn.execute("DELETE FROM daily_billing")
+        conn.execute("DELETE FROM upload_history")
+    reset_upload_state()
+    log.info("All billing data, anomalies, and upload history cleared from database")
+    return {"status": "cleared", "message": "All data cleared from dashboard."}
+
+
+@app.post("/api/save-upload-history", tags=["upload"])
+def save_upload_history():
+    """
+    Snapshot current upload stats into upload_history table.
+    Called by frontend after upload+detection completes.
+    """
+    import json as _json
+    state = get_upload_state()
+    fname = state.get("filename", "unknown.csv")
+
+    with get_conn(DB_PATH) as conn:
+        total_rows = conn.execute("SELECT COUNT(*) AS n FROM daily_billing").fetchone()["n"]
+        total_cost = conn.execute(
+            "SELECT COALESCE(ROUND(SUM(cost_usd),2),0) AS s FROM daily_billing"
+        ).fetchone()["s"]
+        anomaly_count = conn.execute("SELECT COUNT(*) AS n FROM detected_anomalies").fetchone()["n"]
+        savings = conn.execute(
+            "SELECT COALESCE(ROUND(SUM(cost_usd - expected_cost),2),0) AS s FROM detected_anomalies "
+            "WHERE deviation_pct > 0 AND severity IN ('HIGH','CRITICAL')"
+        ).fetchone()["s"]
+        detection_rate = round(anomaly_count / total_rows * 100, 1) if total_rows else 0
+
+        providers = [r["provider"].upper() for r in conn.execute(
+            "SELECT DISTINCT provider FROM daily_billing"
+        ).fetchall()]
+
+        severity_rows = conn.execute(
+            "SELECT severity, COUNT(*) AS n FROM detected_anomalies GROUP BY severity"
+        ).fetchall()
+        severity_breakdown = {r["severity"]: r["n"] for r in severity_rows}
+
+        conn.execute(
+            "INSERT INTO upload_history "
+            "(filename, uploaded_at, total_rows, total_cost, anomaly_count, savings, detection_rate, providers, severity_breakdown) "
+            "VALUES (?, datetime('now'), ?, ?, ?, ?, ?, ?, ?)",
+            (fname, total_rows, total_cost, anomaly_count, savings, detection_rate,
+             _json.dumps(providers), _json.dumps(severity_breakdown)),
+        )
+
+    log.info(f"Saved upload history for {fname}")
+    return {"status": "saved", "filename": fname}
+
+
+@app.get("/api/upload-history", tags=["upload"])
+def get_upload_history():
+    """Return all past upload records, newest first."""
+    import json as _json
+    with get_conn(DB_PATH) as conn:
+        rows = conn.execute(
+            "SELECT * FROM upload_history ORDER BY uploaded_at DESC"
+        ).fetchall()
+
+    items = []
+    for r in rows:
+        item = dict(r)
+        try:
+            item["providers"] = _json.loads(item.get("providers") or "[]")
+        except Exception:
+            item["providers"] = []
+        try:
+            item["severity_breakdown"] = _json.loads(item.get("severity_breakdown") or "{}")
+        except Exception:
+            item["severity_breakdown"] = {}
+        items.append(item)
+
+    # Aggregate totals
+    agg = {
+        "total_files": len(items),
+        "total_rows": sum(i["total_rows"] for i in items),
+        "total_cost": round(sum(i["total_cost"] for i in items), 2),
+        "total_anomalies": sum(i["anomaly_count"] for i in items),
+        "total_savings": round(sum(i["savings"] for i in items), 2),
+    }
+
+    return {"items": items, "aggregate": agg}
+
+
+@app.get("/api/upload-analytics", tags=["upload"])
+def upload_analytics():
+    """
+    Return rich analytics data from the uploaded dataset for visualizations.
+    Cost breakdowns, anomaly severity, model stats, and trends.
+    """
+    state = get_upload_state()
+
+    with get_conn(DB_PATH) as conn:
+        # ── Cost by provider ──────────────────────────────────────────
+        rows = conn.execute(
+            "SELECT provider, ROUND(SUM(cost_usd),2) AS total "
+            "FROM daily_billing GROUP BY provider ORDER BY total DESC"
+        ).fetchall()
+        cost_by_provider = [{"name": r["provider"].upper(), "value": r["total"]} for r in rows]
+
+        # ── Cost by service (top 8) ───────────────────────────────────
+        rows = conn.execute(
+            "SELECT service, ROUND(SUM(cost_usd),2) AS total "
+            "FROM daily_billing GROUP BY service ORDER BY total DESC LIMIT 8"
+        ).fetchall()
+        cost_by_service = [{"name": r["service"], "value": r["total"]} for r in rows]
+
+        # ── Daily cost trend ──────────────────────────────────────────
+        rows = conn.execute(
+            "SELECT date, ROUND(SUM(cost_usd),2) AS total "
+            "FROM daily_billing GROUP BY date ORDER BY date"
+        ).fetchall()
+        cost_trend = [{"date": r["date"], "cost": r["total"]} for r in rows]
+
+        # ── Cost by team ──────────────────────────────────────────────
+        rows = conn.execute(
+            "SELECT team, ROUND(SUM(cost_usd),2) AS total "
+            "FROM daily_billing GROUP BY team ORDER BY total DESC"
+        ).fetchall()
+        cost_by_team = [{"name": r["team"], "value": r["total"]} for r in rows]
+
+        # ── Anomaly severity breakdown ────────────────────────────────
+        rows = conn.execute(
+            "SELECT severity, COUNT(*) AS n FROM detected_anomalies "
+            "GROUP BY severity ORDER BY CASE severity "
+            "WHEN 'CRITICAL' THEN 1 WHEN 'HIGH' THEN 2 "
+            "WHEN 'MEDIUM' THEN 3 ELSE 4 END"
+        ).fetchall()
+        anomaly_by_severity = [{"name": r["severity"], "value": r["n"]} for r in rows]
+
+        # ── Anomalies by detector ─────────────────────────────────────
+        rows = conn.execute(
+            "SELECT detector, COUNT(*) AS n FROM detected_anomalies GROUP BY detector"
+        ).fetchall()
+        anomaly_by_detector = [{"name": r["detector"], "value": r["n"]} for r in rows]
+
+        # ── Anomalies by provider ─────────────────────────────────────
+        rows = conn.execute(
+            "SELECT provider, COUNT(*) AS n FROM detected_anomalies "
+            "GROUP BY provider ORDER BY n DESC"
+        ).fetchall()
+        anomaly_by_provider = [{"name": r["provider"].upper(), "value": r["n"]} for r in rows]
+
+        # ── Total counts ──────────────────────────────────────────────
+        total_rows = conn.execute("SELECT COUNT(*) AS n FROM daily_billing").fetchone()["n"]
+        total_anomalies = conn.execute("SELECT COUNT(*) AS n FROM detected_anomalies").fetchone()["n"]
+        total_cost = conn.execute("SELECT ROUND(SUM(cost_usd),2) AS s FROM daily_billing").fetchone()["s"] or 0
+        anomaly_cost = conn.execute(
+            "SELECT ROUND(SUM(cost_usd),2) AS s FROM detected_anomalies"
+        ).fetchone()["s"] or 0
+        savings = conn.execute(
+            "SELECT ROUND(SUM(cost_usd - expected_cost),2) AS s FROM detected_anomalies "
+            "WHERE deviation_pct > 0 AND severity IN ('HIGH','CRITICAL')"
+        ).fetchone()["s"] or 0
+
+        # ── Top 5 anomalies ───────────────────────────────────────────
+        rows = conn.execute(
+            "SELECT date, provider, service, team, severity, "
+            "ROUND(cost_usd,2) AS cost, ROUND(deviation_pct,1) AS deviation "
+            "FROM detected_anomalies ORDER BY ABS(deviation_pct) DESC LIMIT 5"
+        ).fetchall()
+        top_anomalies = [dict(r) for r in rows]
+
+    return {
+        "cost_by_provider":     cost_by_provider,
+        "cost_by_service":      cost_by_service,
+        "cost_trend":           cost_trend,
+        "cost_by_team":         cost_by_team,
+        "anomaly_by_severity":  anomaly_by_severity,
+        "anomaly_by_detector":  anomaly_by_detector,
+        "anomaly_by_provider":  anomaly_by_provider,
+        "top_anomalies":        top_anomalies,
+        "model_stats": {
+            "total_rows":       total_rows,
+            "total_anomalies":  total_anomalies,
+            "total_cost":       total_cost,
+            "anomaly_cost":     anomaly_cost,
+            "savings":          savings,
+            "detection_rate":   round(total_anomalies / total_rows * 100, 1) if total_rows else 0,
+            "models_used":      ["Z-Score + STL Decomposition", "Isolation Forest"],
+            "ensemble_method":  "Multi-detector consensus",
+        },
+    }
 
 
 # ══════════════════════════════════════════════════════════════════════════════

@@ -2,13 +2,14 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   TrendingUp, CheckCircle, AlertTriangle, Activity,
   GitBranch, Sparkles, BarChart2, RefreshCw, Loader2, Cpu, DollarSign, Zap,
+  Trash2, Upload, Database, Target, FileText, Clock,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell,
 } from 'recharts';
 import { api } from '../data/api';
-import type { SummaryResponse, DetectionStatus } from '../data/api';
+import type { SummaryResponse, DetectionStatus, UploadAnalytics, UploadHistoryResponse } from '../data/api';
 import styles from './CommandCenter.module.css';
 
 /* ─── Custom bar tooltip ─────────────────────────────────────────── */
@@ -47,16 +48,36 @@ const CommandCenter: React.FC = () => {
   const [error,   setError]   = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [detStatus, setDetStatus] = useState<DetectionStatus | null>(null);
+  const [uploadData, setUploadData] = useState<UploadAnalytics | null>(null);
+  const [history, setHistory] = useState<UploadHistoryResponse | null>(null);
+  const [clearing, setClearing] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
-    try { setData(await api.summary()); }
+    try {
+      setData(await api.summary());
+      // Also load upload analytics if data exists
+      try { setUploadData(await api.uploadAnalytics()); } catch { setUploadData(null); }
+      try { setHistory(await api.uploadHistory()); } catch { setHistory(null); }
+    }
     catch (e: unknown) { setError(e instanceof Error ? e.message : 'Failed to load'); }
     finally { setLoading(false); }
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const handleClearDashboard = async () => {
+    if (!window.confirm('Clear all billing data and anomalies? This cannot be undone.')) return;
+    setClearing(true);
+    try {
+      await api.clearData();
+      setUploadData(null);
+      setHistory(null);
+      await load();
+    } catch (e) { console.error(e); }
+    finally { setClearing(false); }
+  };
 
   // Stop polling when detection finishes
   const stopPolling = useCallback(() => {
@@ -159,6 +180,11 @@ const CommandCenter: React.FC = () => {
         <div className={styles.pageActions}>
           <button onClick={load} className={styles.btnGhost}>
             <RefreshCw size={13} /> Refresh
+          </button>
+          <button onClick={handleClearDashboard} disabled={clearing} className={styles.btnDanger}>
+            {clearing
+              ? <><Loader2 size={13} className="spin" /> Clearing…</>
+              : <><Trash2 size={13} /> Clear Data</>}
           </button>
           <button onClick={handleRunDetection} disabled={running} className={styles.btnPrimary}>
             {running
@@ -369,6 +395,107 @@ const CommandCenter: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Upload History Section ──────────────────────────────────── */}
+      {history && history.items.length > 0 && (
+        <div className={styles.datasetSection}>
+          <div className={styles.datasetHeader}>
+            <div className={styles.datasetHeaderLeft}>
+              <div className={styles.datasetIcon}><Upload size={15} /></div>
+              <div>
+                <div className={styles.datasetTitle}>Uploaded Datasets Overview</div>
+                <div className={styles.datasetSub}>
+                  {history.aggregate.total_files} files · {history.aggregate.total_rows.toLocaleString()} total records
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Aggregate totals */}
+          <div className={styles.datasetGrid}>
+            <div className={styles.datasetCard}>
+              <div className={styles.datasetCardIcon} style={{ background: 'rgba(6,182,212,0.1)' }}>
+                <DollarSign size={16} style={{ color: '#06b6d4' }} />
+              </div>
+              <div className={styles.datasetCardLabel}>Total Spend</div>
+              <div className={styles.datasetCardValue} style={{ color: '#06b6d4' }}>
+                ${history.aggregate.total_cost.toLocaleString()}
+              </div>
+              <div className={styles.datasetCardSub}>across all uploads</div>
+            </div>
+            <div className={styles.datasetCard}>
+              <div className={styles.datasetCardIcon} style={{ background: 'rgba(239,68,68,0.1)' }}>
+                <AlertTriangle size={16} style={{ color: '#ef4444' }} />
+              </div>
+              <div className={styles.datasetCardLabel}>Total Anomalies</div>
+              <div className={styles.datasetCardValue} style={{ color: '#ef4444' }}>
+                {history.aggregate.total_anomalies}
+              </div>
+              <div className={styles.datasetCardSub}>combined detections</div>
+            </div>
+            <div className={styles.datasetCard}>
+              <div className={styles.datasetCardIcon} style={{ background: 'rgba(34,197,94,0.1)' }}>
+                <Zap size={16} style={{ color: '#22c55e' }} />
+              </div>
+              <div className={styles.datasetCardLabel}>Total Savings</div>
+              <div className={styles.datasetCardValue} style={{ color: '#22c55e' }}>
+                ${history.aggregate.total_savings.toLocaleString()}
+              </div>
+              <div className={styles.datasetCardSub}>from HIGH + CRITICAL</div>
+            </div>
+            <div className={styles.datasetCard}>
+              <div className={styles.datasetCardIcon} style={{ background: 'rgba(139,92,246,0.1)' }}>
+                <Database size={16} style={{ color: '#8b5cf6' }} />
+              </div>
+              <div className={styles.datasetCardLabel}>Files Analyzed</div>
+              <div className={styles.datasetCardValue} style={{ color: '#8b5cf6' }}>
+                {history.aggregate.total_files}
+              </div>
+              <div className={styles.datasetCardSub}>{history.aggregate.total_rows.toLocaleString()} rows</div>
+            </div>
+          </div>
+
+          {/* Individual file cards */}
+          <div className={styles.historyList}>
+            {history.items.map(h => (
+              <div key={h.id} className={styles.historyCard}>
+                <div className={styles.historyCardLeft}>
+                  <div className={styles.historyFileIcon}><FileText size={14} /></div>
+                  <div>
+                    <div className={styles.historyFileName}>{h.filename}</div>
+                    <div className={styles.historyFileMeta}>
+                      <Clock size={9} /> {new Date(h.uploaded_at).toLocaleString()}
+                      {' · '}{h.providers.join(', ')}
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.historyStats}>
+                  <div className={styles.historyStat}>
+                    <span className={styles.historyStatVal}>{h.total_rows.toLocaleString()}</span>
+                    <span className={styles.historyStatLabel}>rows</span>
+                  </div>
+                  <div className={styles.historyStat}>
+                    <span className={styles.historyStatVal} style={{ color: '#06b6d4' }}>${h.total_cost.toLocaleString()}</span>
+                    <span className={styles.historyStatLabel}>spend</span>
+                  </div>
+                  <div className={styles.historyStat}>
+                    <span className={styles.historyStatVal} style={{ color: '#ef4444' }}>{h.anomaly_count}</span>
+                    <span className={styles.historyStatLabel}>anomalies</span>
+                  </div>
+                  <div className={styles.historyStat}>
+                    <span className={styles.historyStatVal} style={{ color: '#22c55e' }}>${h.savings.toLocaleString()}</span>
+                    <span className={styles.historyStatLabel}>savings</span>
+                  </div>
+                  <div className={styles.historyStat}>
+                    <span className={styles.historyStatVal} style={{ color: '#8b5cf6' }}>{h.detection_rate}%</span>
+                    <span className={styles.historyStatLabel}>rate</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Bottom grid ────────────────────────────────────────────── */}
       <div className={styles.bottomGrid}>

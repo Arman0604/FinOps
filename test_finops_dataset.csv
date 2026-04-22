@@ -1,0 +1,41 @@
+date,provider,service,category,team,environment,region,cost_usd
+2025-09-01,aws,EC2,compute,platform,production,us-east,280
+2025-09-01,aws,S3,storage,data-eng,production,us-east,95
+2025-09-01,azure,Virtual Machines,compute,ml-team,production,eu-west,260
+2025-09-01,gcp,Compute Engine,compute,backend,production,us-central,240
+2025-09-02,aws,EC2,compute,platform,production,us-east,300
+2025-09-02,aws,S3,storage,data-eng,production,us-east,100
+2025-09-02,azure,Virtual Machines,compute,ml-team,production,eu-west,270
+2025-09-02,gcp,Compute Engine,compute,backend,production,us-central,250
+2025-09-03,aws,EC2,compute,platform,production,us-east,275
+2025-09-03,aws,S3,storage,data-eng,production,us-east,90
+2025-09-03,azure,Virtual Machines,compute,ml-team,production,eu-west,255
+2025-09-03,gcp,Compute Engine,compute,backend,production,us-central,235
+2025-09-04,aws,EC2,compute,platform,production,us-east,310
+2025-09-04,aws,S3,storage,data-eng,production,us-east,110
+2025-09-04,azure,Virtual Machines,compute,ml-team,production,eu-west,280
+2025-09-04,gcp,Compute Engine,compute,backend,production,us-central,260
+2025-09-05,aws,EC2,compute,platform,production,us-east,320
+2025-09-05,aws,S3,storage,data-eng,production,us-east,120
+2025-09-05,azure,Virtual Machines,compute,ml-team,production,eu-west,290
+2025-09-05,gcp,Compute Engine,compute,backend,production,us-central,270
+2025-09-06,aws,EC2,compute,platform,production,us-east,210
+2025-09-06,aws,S3,storage,data-eng,production,us-east,70
+2025-09-06,azure,Virtual Machines,compute,ml-team,production,eu-west,200
+2025-09-06,gcp,Compute Engine,compute,backend,production,us-central,190
+2025-09-07,aws,EC2,compute,platform,production,us-east,190
+2025-09-07,aws,S3,storage,data-eng,production,us-east,60
+2025-09-07,azure,Virtual Machines,compute,ml-team,production,eu-west,180
+2025-09-07,gcp,Compute Engine,compute,backend,production,us-central,170
+2025-09-08,aws,EC2,compute,platform,production,us-east,330
+2025-09-08,aws,S3,storage,data-eng,production,us-east,130
+2025-09-08,azure,Virtual Machines,compute,ml-team,production,eu-west,300
+2025-09-08,gcp,Compute Engine,compute,backend,production,us-central,280
+2025-09-09,aws,EC2,compute,platform,production,us-east,350
+2025-09-09,aws,S3,storage,data-eng,production,us-east,140
+2025-09-09,azure,Virtual Machines,compute,ml-team,production,eu-west,320
+2025-09-09,gcp,Compute Engine,compute,backend,production,us-central,300
+2025-09-10,aws,EC2,compute,platform,production,us-east,800
+2025-09-10,aws,S3,storage,data-eng,production,us-east,400
+2025-09-10,azure,Virtual Machines,compute,ml-team,production,eu-west,750
+2025-09-10,gcp,Compute Engine,compute,backend,production,us-central,700

@@ -824,3 +824,241 @@
   100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
 }
 
+/* ═══════════════ CLEAR DATA BUTTON ════════════════════════════════ */
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--r-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.25);
+  color: #ef4444;
+  cursor: pointer;
+  transition: all var(--t-normal);
+  font-family: var(--font-main);
+}
+.btnDanger:hover {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.4);
+  transform: translateY(-1px);
+}
+.btnDanger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ═══════════════ UPLOADED DATASET SECTION ══════════════════════════ */
+.datasetSection {
+  background: var(--bg-card);
+  border: 1px solid rgba(6,182,212,0.15);
+  border-radius: var(--r-lg);
+  padding: var(--s5) var(--s6);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.datasetSection::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent);
+}
+
+.datasetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--s5);
+}
+.datasetHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.datasetIcon {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: linear-gradient(135deg, rgba(6,182,212,0.15), rgba(139,92,246,0.15));
+  display: flex; align-items: center; justify-content: center;
+  color: #06b6d4;
+}
+.datasetTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+}
+.datasetSub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.datasetGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: var(--s3);
+  margin-bottom: var(--s4);
+}
+@media (max-width: 900px) { .datasetGrid { grid-template-columns: 1fr 1fr; } }
+
+.datasetCard {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+.datasetCardIcon {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 0.5rem;
+}
+.datasetCardLabel {
+  font-size: 0.62rem; font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+.datasetCardValue {
+  font-size: 1.3rem; font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.datasetCardSub {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+  line-height: 1.3;
+}
+
+/* Mini anomaly table inside dataset section */
+.datasetTable {
+  background: rgba(255,255,255,0.015);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.datasetTableTitle {
+  display: flex; align-items: center; gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.7rem; font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.datasetTableRow {
+  display: grid;
+  grid-template-columns: 72px 1fr 100px 80px 80px;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+  font-size: 0.75rem;
+  align-items: center;
+}
+.datasetTableRow:last-child { border-bottom: none; }
+.datasetSevBadge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0.1rem 0.4rem; border-radius: 4px;
+  font-size: 0.58rem; font-weight: 800; letter-spacing: 0.4px;
+  width: fit-content;
+}
+.datasetTableService { font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.datasetTableTeam { color: var(--text-muted); font-size: 0.72rem; }
+.datasetTableCost { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+.datasetTableDev { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ═══════════════ UPLOAD HISTORY CARDS ══════════════════════════════ */
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.historyCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 8px;
+  transition: all 0.2s;
+  gap: 1rem;
+}
+.historyCard:hover {
+  background: rgba(255,255,255,0.035);
+  border-color: rgba(6,182,212,0.12);
+}
+
+.historyCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.historyFileIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: rgba(6,182,212,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #06b6d4;
+  flex-shrink: 0;
+}
+
+.historyFileName {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.historyFileMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.historyStats {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-shrink: 0;
+}
+
+.historyStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  min-width: 50px;
+}
+
+.historyStatVal {
+  font-size: 0.85rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.historyStatLabel {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}

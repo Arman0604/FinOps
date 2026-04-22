@@ -1,0 +1,116 @@
+
+# CSV Upload + Real-Time Streaming Anomaly Detection
+
+Add a new page where users upload cloud billing CSVs and watch anomalies get detected row-by-row in real time, with a live counter, progress bar, and streaming anomaly table.
+
+## User Review Required
+
+> [!IMPORTANT]
+> **CSV Format**: The upload will accept CSVs with columns: `date, provider, service, category, team, environment, region, cost_usd` — the same schema as `daily_billing`. Files missing columns will get a validation error before processing starts.
+
+> [!WARNING]
+> **Previous anomalies are cleared** on each new upload. The uploaded data replaces the existing `daily_billing` table contents. This is consistent with existing `run_anomaly_detection(clear_previous=True)` behavior.
+
+## Proposed Changes
+
+### Backend — Streaming Upload & Detection
+
+#### [NEW] [stream_detector.py](file:///d:/FinOps/stream_detector.py)
+- **Row-by-row anomaly detection pipeline** that simulates streaming
+- Loads the uploaded CSV, inserts rows into `daily_billing` in micro-batches
+- After inserting all data, runs the full Z-score+IsolationForest detection pipeline (same as existing `anomaly_detector.py`)
+- But **saves anomalies incrementally** (one-by-one with a small delay) to simulate real-time streaming
+- Updates a shared `_upload_state` dict with: `processed_rows`, `total_rows`, `anomaly_count`, `current_row_info`, `status`, `recent_anomalies`
+- The existing trained IF model is used for inference only (not re-trained)
+
+#### [MODIFY] [api.py](file:///d:/FinOps/api.py)
+Add 3 new endpoints:
+- `POST /api/upload-csv` — Accepts multipart file upload, validates columns, kicks off background streaming detection
+- `GET /api/upload-status` — Returns live progress: `{ status, total_rows, processed_rows, anomaly_count, current_row, recent_anomalies[], error }`
+- `POST /api/upload-reset` — Clears state and stops any running upload
+
+#### [MODIFY] [storage.py](file:///d:/FinOps/storage.py)
+- Add `load_billing_data_from_csv(filepath)` — loads a CSV file into `daily_billing`, returning row count
+
+---
+
+### Frontend — Upload Page with Live Streaming UI
+
+#### [NEW] [DataUpload.tsx](file:///d:/FinOps/src/pages/DataUpload.tsx)
+New page with:
+- **Upload Zone** — Drag & drop / click-to-upload area with file validation
+- **Progress Section** — Animated progress bar with `processed_rows / total_rows`, live percentage
+- **Anomaly Counter** — Large animated number that ticks up as anomalies are found
+- **Live Anomaly Table** — Rows appear in real-time as they're detected (severity badge, service, team, cost, deviation)
+- **Status indicators** — Idle / Processing / Complete / Error states
+- Polls `GET /api/upload-status` every 500ms while processing is active
+
+#### [NEW] [DataUpload.module.css](file:///d:/FinOps/src/pages/DataUpload.module.css)
+Premium dark-theme styles matching existing design system:
+- Glassmorphism upload zone with animated dashed border
+- Gradient progress bar with glow effect
+- Pulsing anomaly counter
+- Smooth row-entry animations for the live table
+
+#### [MODIFY] [api.ts](file:///d:/FinOps/src/data/api.ts)
+Add new types and API methods:
+- `UploadStatus` interface
+- `api.uploadCSV(file: File)` — POST multipart form
+- `api.uploadStatus()` — GET polling
+- `api.uploadReset()` — POST reset
+
+#### [MODIFY] [Sidebar.tsx](file:///d:/FinOps/src/components/Layout/Sidebar.tsx)
+Add "Data Upload" nav item with `Upload` icon
+
+#### [MODIFY] [App.tsx](file:///d:/FinOps/src/App.tsx)
+Add route: `/data-upload` → `<DataUpload />`
+
+## Architecture Flow
+
+```mermaid
+sequenceDiagram
+    participant UI as Frontend
+    participant API as FastAPI
+    participant BG as Background Task
+    participant DB as SQLite
+
+    UI->>API: POST /api/upload-csv (file)
+    API->>API: Validate CSV columns
+    API->>BG: Start background stream_detect()
+    API-->>UI: { status: "started", total_rows }
+    
+    loop Every 500ms
+        UI->>API: GET /api/upload-status
+        API-->>UI: { processed_rows, anomaly_count, recent_anomalies }
+    end
+
+    BG->>DB: Clear daily_billing + detected_anomalies
+    BG->>DB: Insert CSV into daily_billing
+    BG->>BG: Run Z-score detector
+    BG->>BG: Run Isolation Forest
+    BG->>BG: Ensemble merge
+    
+    loop For each detected anomaly
+        BG->>DB: INSERT anomaly (one by one)
+        BG->>BG: Update _upload_state counter
+    end
+    
+    BG->>BG: status = "complete"
+```
+
+## Open Questions
+
+None — this is a self-contained feature addition using established patterns from the existing detection pipeline.
+
+## Verification Plan
+
+### Automated Tests
+- Upload a sample CSV via `curl -F "file=@data/raw/gcp_billing.csv" http://localhost:8000/api/upload-csv`
+- Poll `/api/upload-status` and verify counters increment
+- Verify anomalies appear in `/api/anomalies` after completion
+
+### Manual Verification
+- Open browser to `/data-upload` page
+- Upload a CSV file and observe live progress bar + anomaly counter ticking up
+- Verify anomaly table populates in real-time
+- Verify navigation works from sidebar
