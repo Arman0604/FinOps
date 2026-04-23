@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FinOps Anomaly Detection Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+:root{--bg:#06080f;--card:#0d1117;--card2:#161b22;--border:#1e2733;--text:#e6edf3;--dim:#7d8590;
+--cyan:#22d3ee;--purple:#a78bfa;--red:#f87171;--green:#34d399;--amber:#fbbf24;--blue:#60a5fa;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+.dash{max-width:1480px;margin:0 auto;padding:20px}
+header{text-align:center;padding:40px 20px 30px;background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(167,139,250,.08));
+border-radius:16px;border:1px solid var(--border);margin-bottom:24px;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+background:radial-gradient(circle at 30% 50%,rgba(34,211,238,.05),transparent 50%);animation:pulse 8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+header h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--purple),var(--amber));
+-webkit-background-clip:text;-webkit-text-fill-color:transparent;position:relative}
+header p{color:var(--dim);margin-top:6px;font-size:.9rem;position:relative}
+.badges{margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;position:relative}
+.badge{padding:4px 14px;border-radius:20px;font-size:.75rem;font-weight:600;background:rgba(34,211,238,.12);color:var(--cyan)}
+.badge.r{background:rgba(248,113,113,.12);color:var(--red)}
+.badge.p{background:rgba(167,139,250,.12);color:var(--purple)}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.kpi{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--border);
+transition:transform .2s,box-shadow .2s;animation:fadeUp .5s ease both}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(34,211,238,.1)}
+.kpi-label{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;font-weight:500}
+.kpi-val{font-size:1.6rem;font-weight:700;color:var(--cyan);margin:4px 0}
+.kpi-sub{font-size:.75rem;color:var(--dim)}
+.kpi.danger .kpi-val{color:var(--red)}.kpi.warn .kpi-val{color:var(--amber)}.kpi.ok .kpi-val{color:var(--green)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.section{margin-bottom:24px;animation:fadeUp .6s ease both}
+.section-title{font-size:1.1rem;font-weight:700;margin-bottom:14px;color:var(--text);
+display:flex;align-items:center;gap:8px}
+.section-title span{font-size:1.2rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.chart-card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);
+transition:box-shadow .2s}
+.chart-card:hover{box-shadow:0 4px 20px rgba(34,211,238,.06)}
+.chart-card h4{font-size:.85rem;font-weight:600;color:var(--dim);margin-bottom:10px}
+.full{grid-column:1/-1}
+table.dtable{width:100%;border-collapse:collapse;font-size:.78rem}
+.dtable th{background:var(--card2);color:var(--dim);padding:10px 12px;text-align:left;font-weight:600;
+text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0}
+.dtable td{padding:8px 12px;border-bottom:1px solid var(--border)}
+.dtable tr:hover{background:rgba(34,211,238,.04)}
+.sev{padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600}
+.sev.CRITICAL{background:rgba(248,113,113,.2);color:#f87171}
+.sev.HIGH{background:rgba(251,191,36,.2);color:#fbbf24}
+.sev.MEDIUM{background:rgba(96,165,250,.2);color:#60a5fa}
+.sev.LOW{background:rgba(52,211,153,.2);color:#34d399}
+.table-wrap{max-height:400px;overflow-y:auto;border-radius:8px;border:1px solid var(--border)}
+.upload-zone{background:var(--card);border:2px dashed var(--border);border-radius:16px;padding:40px;
+text-align:center;transition:border-color .3s,background .3s;cursor:pointer}
+.upload-zone:hover{border-color:var(--cyan);background:rgba(34,211,238,.03)}
+.upload-zone h3{color:var(--cyan);margin-bottom:8px}
+.upload-zone p{color:var(--dim);font-size:.85rem}
+.upload-zone input{display:none}
+.btn{background:linear-gradient(135deg,var(--cyan),var(--purple));color:#000;border:none;
+padding:10px 28px;border-radius:8px;font-weight:600;font-size:.85rem;cursor:pointer;margin-top:12px;
+transition:opacity .2s}.btn:hover{opacity:.85}.btn:disabled{opacity:.4;cursor:not-allowed}
+#upload-results{display:none}
+.loader{display:inline-block;width:18px;height:18px;border:2px solid var(--border);
+border-top-color:var(--cyan);border-radius:50%;animation:spin .6s linear infinite;margin-left:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="dash">
+<header>
+<h1>FinOps Anomaly Detection Dashboard</h1>
+<p>ML-Powered Cloud Cost Intelligence · Isolation Forest Model</p>
+<div class="badges"><span class="badge">☁️ AWS · Azure · GCP</span>
+<span class="badge p">🤖 Isolation Forest</span><span class="badge r" id="badge-anom"></span></div>
+</header>
+<div id="kpis" class="kpi-grid"></div>
+
+<div class="section"><div class="section-title"><span>📈</span> Daily Cloud Spend — Time Series</div>
+<div class="chart-card"><div id="ch-ts" style="height:400px"></div></div></div>
+
+<div class="section"><div class="section-title"><span>💰</span> Spend Distribution by Dimension</div>
+<div class="grid2" id="spend-charts"></div></div>
+
+<div class="section"><div class="section-title"><span>⚠️</span> Anomaly Counts by Dimension</div>
+<div class="grid2" id="anom-charts"></div></div>
+
+<div class="section"><div class="section-title"><span>📦</span> Cost Distribution & Outliers</div>
+<div class="grid2"><div class="chart-card"><h4>By Provider</h4><div id="ch-box-provider" style="height:350px"></div></div>
+<div class="chart-card"><h4>By Service</h4><div id="ch-box-service" style="height:350px"></div></div></div></div>
+
+<div class="section"><div class="section-title"><span>🎯</span> Severity & Anomaly Breakdown</div>
+<div class="grid3"><div class="chart-card"><h4>Severity Distribution</h4><div id="ch-sev" style="height:320px"></div></div>
+<div class="chart-card"><h4>Provider × Severity</h4><div id="ch-bd-provider" style="height:320px"></div></div>
+<div class="chart-card"><h4>Service × Severity</h4><div id="ch-bd-service" style="height:320px"></div></div></div></div>
+
+<div class="section"><div class="section-title"><span>📋</span> Top Anomalies — Detail Table</div>
+<div class="chart-card"><div class="table-wrap"><table class="dtable" id="anom-table"><thead>
+<tr><th>Date</th><th>Provider</th><th>Service</th><th>Team</th><th>Env</th><th>Region</th>
+<th>Cost ($)</th><th>Score</th><th>Severity</th></tr></thead><tbody></tbody></table></div></div></div>
+
+<div class="section"><div class="section-title"><span>🔮</span> Budget Forecast</div>
+<div class="grid2"><div class="chart-card"><h4>Actual vs Forecast (Daily)</h4><div id="ch-fc1" style="height:350px"></div></div>
+<div class="chart-card"><h4>Weekly Avg Spend vs Predicted</h4><div id="ch-fc2" style="height:350px"></div></div></div></div>
+
+<div class="section"><div class="section-title"><span>📤</span> Upload CSV for Inference</div>
+<div class="upload-zone" id="drop-zone" onclick="document.getElementById('csv-input').click()">
+<h3>Drop CSV or Click to Upload</h3>
+<p>File must have: date, provider, service, category, team, environment, region, cost_usd</p>
+<input type="file" id="csv-input" accept=".csv"><br>
+<button class="btn" id="upload-btn" disabled>Analyze with Isolation Forest</button>
+<span id="upload-status"></span></div></div>
+
+<div id="upload-results">
+<div class="section"><div class="section-title"><span>📊</span> Upload Results — <span id="up-filename"></span></div>
+<div class="kpi-grid" id="up-kpis"></div>
+<div class="grid2"><div class="chart-card"><h4>Cost Over Time (Uploaded)</h4><div id="up-ts" style="height:340px"></div></div>
+<div class="chart-card"><h4>Normal vs Anomaly Distribution</h4><div id="up-dist" style="height:340px"></div></div></div>
+<div class="grid2" style="margin-top:16px"><div class="chart-card"><h4>Severity Breakdown (Uploaded)</h4><div id="up-sev" style="height:320px"></div></div>
+<div class="chart-card"><h4>Results Summary</h4>
+<div class="table-wrap"><table class="dtable" id="up-table"><thead>
+<tr><th>Date</th><th>Provider</th><th>Service</th><th>Team</th><th>Cost</th><th>Score</th><th>Severity</th><th>Anomaly</th></tr>
+</thead><tbody></tbody></table></div></div></div></div></div>
+
+<footer style="text-align:center;padding:24px;color:var(--dim);font-size:.75rem;border-top:1px solid var(--border);margin-top:20px">
+FinOps Intelligence · Isolation Forest (100 trees, 5% contamination) · Powered by Plotly.js</footer>
+</div>
+<script>
+const C={bg:'#06080f',card:'#0d1117',text:'#e6edf3',dim:'#7d8590',grid:'#1e2733',
+cyan:'#22d3ee',purple:'#a78bfa',red:'#f87171',green:'#34d399',amber:'#fbbf24',blue:'#60a5fa'};
+const SEV_C={LOW:C.green,MEDIUM:C.blue,HIGH:C.amber,CRITICAL:C.red};
+const BL={paper_bgcolor:C.bg,plot_bgcolor:C.card,font:{family:'Inter',color:C.text,size:11},
+margin:{l:50,r:20,t:10,b:40},xaxis:{gridcolor:C.grid,zerolinecolor:C.grid},
+yaxis:{gridcolor:C.grid,zerolinecolor:C.grid}};
+const PC={responsive:true,displayModeBar:false};
+
+function fmt(v){return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1e3?'$'+Math.round(v).toLocaleString():'$'+v.toFixed(2)}
+
+async function init(){
+const r=await fetch('/api/data');const D=await r.json();
+// KPIs
+const k=D.kpis;
+document.getElementById('badge-anom').textContent='⚠️ '+k.anomaly_count.toLocaleString()+' Anomalies';
+const kpis=[
+{l:'Total Records',v:k.total_rows.toLocaleString(),s:k.date_range,c:''},
+{l:'Total Spend',v:fmt(k.total_spend),s:'Avg '+fmt(k.avg_daily)+'/day',c:''},
+{l:'Anomalies',v:k.anomaly_count.toLocaleString(),s:(k.anomaly_count/k.total_rows*100).toFixed(1)+'% of records',c:'danger'},
+{l:'Anomalous Spend',v:fmt(k.anomaly_spend),s:k.savings_pct+'% potential savings',c:'warn'},
+{l:'Peak Daily Spend',v:fmt(k.peak_daily),s:'Single day maximum',c:''},
+{l:'Clean Spend',v:fmt(k.total_spend-k.anomaly_spend),s:'After removing anomalies',c:'ok'}];
+document.getElementById('kpis').innerHTML=kpis.map((k,i)=>
+`<div class="kpi ${k.c}" style="animation-delay:${i*60}ms"><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+
+// Time series
+const ts=D.timeseries;
+Plotly.newPlot('ch-ts',[
+{x:ts.dates,y:ts.costs,type:'scatter',mode:'lines',name:'Daily Cost',line:{color:C.cyan,width:1.5},fill:'tozeroy',fillcolor:'rgba(34,211,238,.06)'},
+{x:ts.dates,y:ts.rolling_avg,type:'scatter',mode:'lines',name:'7-Day Rolling Avg',line:{color:C.amber,width:2,dash:'dot'}},
+{x:ts.anom_dates,y:ts.anom_costs,type:'scatter',mode:'markers',name:'Anomaly Days',marker:{color:C.red,size:7,symbol:'diamond',line:{width:1,color:'#fff'}}}
+],{...BL,legend:{orientation:'h',y:1.12,x:.5,xanchor:'center'},xaxis:{...BL.xaxis,title:'Date'},yaxis:{...BL.yaxis,title:'Cost (USD)'}},PC);
+
+// Spend bars
+const spEl=document.getElementById('spend-charts');
+const spColors=[C.cyan,C.purple,C.blue,C.amber,C.green];
+['provider','service','team','environment','region'].forEach((dim,i)=>{
+const d=D.spend_by[dim];const div=document.createElement('div');div.className='chart-card';
+div.innerHTML=`<h4>Spend by ${dim.charAt(0).toUpperCase()+dim.slice(1)}</h4><div id="ch-sp-${dim}" style="height:300px"></div>`;
+spEl.appendChild(div);
+Plotly.newPlot(`ch-sp-${dim}`,[{x:d.labels,y:d.values,type:'bar',marker:{color:spColors[i],opacity:.85},
+text:d.values.map(fmt),textposition:'outside',textfont:{size:10}}],
+{...BL,yaxis:{...BL.yaxis,title:'Spend ($)'}},PC);});
+
+// Anomaly count bars
+const anEl=document.getElementById('anom-charts');
+['provider','service','team','region'].forEach((dim,i)=>{
+const d=D.anomaly_by[dim];const div=document.createElement('div');div.className='chart-card';
+div.innerHTML=`<h4>Anomalies by ${dim.charAt(0).toUpperCase()+dim.slice(1)}</h4><div id="ch-an-${dim}" style="height:300px"></div>`;
+anEl.appendChild(div);
+Plotly.newPlot(`ch-an-${dim}`,[{x:d.labels,y:d.values,type:'bar',marker:{color:C.red,opacity:.8},
+text:d.values.map(String),textposition:'outside',textfont:{size:10}}],
+{...BL,yaxis:{...BL.yaxis,title:'Count'}},PC);});
+
+// Box plots
+['provider','service'].forEach(dim=>{
+const traces=D.box[dim].map(t=>({y:t.values,name:t.name,type:'box',boxmean:'sd',
+marker:{color:dim==='provider'?C.cyan:C.purple,opacity:.7},line:{color:dim==='provider'?C.cyan:C.purple}}));
+Plotly.newPlot(`ch-box-${dim}`,traces,{...BL,showlegend:false,yaxis:{...BL.yaxis,title:'Cost ($)'}},PC);});
+
+// Severity
+const sv=D.severity;
+Plotly.newPlot('ch-sev',[{x:sv.labels,y:sv.values,type:'bar',
+marker:{color:sv.labels.map(l=>SEV_C[l])},text:sv.values.map(String),textposition:'outside',textfont:{size:11}}],
+{...BL,yaxis:{...BL.yaxis,title:'Count'}},PC);
+
+// Breakdowns
+['provider','service'].forEach(dim=>{
+const bd=D.breakdowns[dim];
+const traces=['LOW','MEDIUM','HIGH','CRITICAL'].map(s=>({x:bd.labels,y:bd.series[s],name:s,type:'bar',
+marker:{color:SEV_C[s]}}));
+Plotly.newPlot(`ch-bd-${dim}`,traces,{...BL,barmode:'stack',legend:{orientation:'h',y:1.15,x:.5,xanchor:'center',font:{size:10}}},PC);});
+
+// Anomaly table
+const tbody=document.querySelector('#anom-table tbody');
+D.table.forEach(r=>{const tr=document.createElement('tr');
+tr.innerHTML=`<td>${r.date}</td><td>${r.provider}</td><td>${r.service}</td><td>${r.team}</td>
+<td>${r.environment}</td><td>${r.region}</td><td>$${r.cost.toLocaleString()}</td>
+<td>${r.score}</td><td><span class="sev ${r.severity}">${r.severity}</span></td>`;
+tbody.appendChild(tr);});
+
+// Forecast
+const fc=D.forecast;
+Plotly.newPlot('ch-fc1',[
+{x:fc.dates,y:fc.actual,type:'scatter',mode:'lines',name:'Actual',line:{color:C.cyan,width:1.5}},
+{x:fc.dates,y:fc.forecast,type:'scatter',mode:'lines',name:'Forecast (14d MA)',line:{color:C.amber,width:2,dash:'dash'}}
+],{...BL,legend:{orientation:'h',y:1.12,x:.5,xanchor:'center'},yaxis:{...BL.yaxis,title:'Cost ($)'}},PC);
+Plotly.newPlot('ch-fc2',[
+{x:fc.wk_dates,y:fc.wk_avg,type:'scatter',mode:'lines+markers',name:'Avg Daily (Weekly)',line:{color:C.purple,width:2},marker:{size:5}},
+{x:fc.wk_dates,y:fc.wk_pred,type:'scatter',mode:'lines',name:'Predicted (4W MA)',line:{color:C.green,width:2,dash:'dot'}}
+],{...BL,legend:{orientation:'h',y:1.12,x:.5,xanchor:'center'},yaxis:{...BL.yaxis,title:'Avg Cost ($)'}},PC);
+}
+
+// Upload
+const inp=document.getElementById('csv-input'),btn=document.getElementById('upload-btn'),status=document.getElementById('upload-status');
+inp.addEventListener('change',()=>{if(inp.files.length){btn.disabled=false;status.textContent=' '+inp.files[0].name}});
+document.getElementById('drop-zone').addEventListener('dragover',e=>{e.preventDefault();e.currentTarget.style.borderColor=C.cyan});
+document.getElementById('drop-zone').addEventListener('dragleave',e=>{e.currentTarget.style.borderColor=''});
+document.getElementById('drop-zone').addEventListener('drop',e=>{e.preventDefault();e.currentTarget.style.borderColor='';
+if(e.dataTransfer.files.length){inp.files=e.dataTransfer.files;btn.disabled=false;status.textContent=' '+e.dataTransfer.files[0].name}});
+
+btn.addEventListener('click',async()=>{
+if(!inp.files.length)return;btn.disabled=true;
+status.innerHTML='<span class="loader"></span> Analyzing...';
+const fd=new FormData();fd.append('file',inp.files[0]);
+try{
+const r=await fetch('/api/predict',{method:'POST',body:fd});const D=await r.json();
+if(D.error){status.textContent=' Error: '+D.error;btn.disabled=false;return}
+document.getElementById('upload-results').style.display='block';
+document.getElementById('up-filename').textContent=D.filename+' ('+D.total+' rows)';
+status.textContent=' ✅ Done — '+D.anomalies+' anomalies found';
+
+document.getElementById('up-kpis').innerHTML=[
+{l:'Total Rows',v:D.total,c:''},{l:'Anomalies',v:D.anomalies,c:'danger'},
+{l:'Anomaly Rate',v:(D.anomalies/D.total*100).toFixed(1)+'%',c:'warn'}
+].map(k=>`<div class="kpi ${k.c}"><div class="kpi-label">${k.l}</div><div class="kpi-val">${k.v}</div></div>`).join('');
+
+const ut=D.timeseries;
+Plotly.newPlot('up-ts',[
+{x:ut.dates,y:ut.costs,type:'scatter',mode:'lines',name:'Cost',line:{color:C.cyan,width:1.5},fill:'tozeroy',fillcolor:'rgba(34,211,238,.06)'},
+{x:ut.anom_dates,y:ut.anom_costs,type:'scatter',mode:'markers',name:'Anomalies',marker:{color:C.red,size:7,symbol:'diamond'}}
+],{...BL,legend:{orientation:'h',y:1.12,x:.5,xanchor:'center'}},PC);
+
+const dd=D.distribution;
+Plotly.newPlot('up-dist',[{x:['Normal','Anomaly'],y:[dd.normal,dd.anomaly],type:'bar',
+marker:{color:[C.green,C.red]},text:[dd.normal,dd.anomaly],textposition:'outside',textfont:{size:13}}],
+{...BL,yaxis:{...BL.yaxis,title:'Count'}},PC);
+
+const us=D.severity;
+Plotly.newPlot('up-sev',[{x:us.labels,y:us.values,type:'bar',marker:{color:us.labels.map(l=>SEV_C[l])},
+text:us.values.map(String),textposition:'outside'}],{...BL},PC);
+
+const tb=document.querySelector('#up-table tbody');tb.innerHTML='';
+D.rows.slice(0,200).forEach(r=>{const tr=document.createElement('tr');
+tr.innerHTML=`<td>${r.date}</td><td>${r.provider}</td><td>${r.service}</td><td>${r.team}</td>
+<td>$${r.cost}</td><td>${r.score}</td><td><span class="sev ${r.severity}">${r.severity}</span></td>
+<td>${r.is_anomaly?'<span style="color:'+C.red+'">⚠ YES</span>':'<span style="color:'+C.green+'">✓ NO</span>'}</td>`;
+tb.appendChild(tr);});
+document.getElementById('upload-results').scrollIntoView({behavior:'smooth'});
+}catch(e){status.textContent=' Error: '+e.message}
+btn.disabled=false;});
+
+init();
+</script>
+</body>
+</html>

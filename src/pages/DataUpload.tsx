@@ -13,6 +13,7 @@ import {
 import { api } from '../data/api';
 import type { UploadStatus, RecentAnomaly, SummaryResponse, UploadAnalytics } from '../data/api';
 import styles from './DataUpload.module.css';
+import VisualizationSection from '../components/VisualizationSection/VisualizationSection';
 
 /* ── Colors ──────────────────────────────────────────────────────── */
 const SEV_COLORS: Record<string, string> = {
@@ -498,6 +499,9 @@ const DataUpload: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* ── Deep Visualization Section ───────────────────────────── */}
+          <VisualizationSection analytics={a} />
 
           {/* ── Completion + Toggle + Actions ───────────────────────── */}
           {summaryData && (

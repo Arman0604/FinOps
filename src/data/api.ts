@@ -148,6 +148,24 @@ export interface UploadAnalytics {
   anomaly_by_severity: { name: string; value: number }[];
   anomaly_by_detector: { name: string; value: number }[];
   anomaly_by_provider: { name: string; value: number }[];
+  anomaly_by_service:  { name: string; value: number }[];
+  anomaly_by_team:     { name: string; value: number }[];
+  anomaly_by_region:   { name: string; value: number }[];
+  spend_by_env:        { name: string; value: number }[];
+  spend_by_region:     { name: string; value: number }[];
+  normal_vs_anomaly:   { name: string; value: number }[];
+  cost_time_series_with_anomalies: {
+    date: string; cost: number; rolling_avg: number;
+    is_anomaly: boolean; anomaly_cost: number | null;
+  }[];
+  forecast_comparison: { date: string; actual: number; predicted: number }[];
+  detailed_anomalies: {
+    date: string; provider: string; service: string; team: string;
+    environment: string; cost_usd: number; expected_cost: number;
+    deviation_pct: number; severity: string; anomaly_type: string;
+    detector: string; anomaly_score: number; description: string;
+  }[];
+  provider_service_breakdown: { provider: string; service: string; count: number }[];
   top_anomalies:       { date: string; provider: string; service: string; team: string; severity: string; cost: number; deviation: number }[];
   model_stats: {
     total_rows: number;

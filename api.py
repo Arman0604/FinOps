@@ -1095,9 +1095,111 @@ def upload_analytics():
         ).fetchall()
         anomaly_by_provider = [{"name": r["provider"].upper(), "value": r["n"]} for r in rows]
 
-        # ── Total counts ──────────────────────────────────────────────
+        # ── Anomalies by service (top 10) ─────────────────────────────
+        rows = conn.execute(
+            "SELECT service, COUNT(*) AS n FROM detected_anomalies "
+            "GROUP BY service ORDER BY n DESC LIMIT 10"
+        ).fetchall()
+        anomaly_by_service = [{"name": r["service"], "value": r["n"]} for r in rows]
+
+        # ── Anomalies by team ─────────────────────────────────────────
+        rows = conn.execute(
+            "SELECT team, COUNT(*) AS n FROM detected_anomalies "
+            "GROUP BY team ORDER BY n DESC"
+        ).fetchall()
+        anomaly_by_team = [{"name": r["team"], "value": r["n"]} for r in rows]
+
+        # ── Anomalies by region ───────────────────────────────────────
+        try:
+            rows = conn.execute(
+                "SELECT region, COUNT(*) AS n FROM detected_anomalies "
+                "GROUP BY region ORDER BY n DESC"
+            ).fetchall()
+            anomaly_by_region = [{"name": r["region"], "value": r["n"]} for r in rows]
+        except Exception:
+            anomaly_by_region = []
+
+        # ── Spend by environment ──────────────────────────────────────
+        rows = conn.execute(
+            "SELECT environment, ROUND(SUM(cost_usd),2) AS total "
+            "FROM daily_billing GROUP BY environment ORDER BY total DESC"
+        ).fetchall()
+        spend_by_env = [{"name": r["environment"], "value": r["total"]} for r in rows]
+
+        # ── Spend by region ───────────────────────────────────────────
+        try:
+            rows = conn.execute(
+                "SELECT region, ROUND(SUM(cost_usd),2) AS total "
+                "FROM daily_billing GROUP BY region ORDER BY total DESC LIMIT 12"
+            ).fetchall()
+            spend_by_region = [{"name": r["region"], "value": r["total"]} for r in rows]
+        except Exception:
+            spend_by_region = []
+
+        # ── Normal vs Anomaly counts ──────────────────────────────────
         total_rows = conn.execute("SELECT COUNT(*) AS n FROM daily_billing").fetchone()["n"]
         total_anomalies = conn.execute("SELECT COUNT(*) AS n FROM detected_anomalies").fetchone()["n"]
+        normal_count = max(0, total_rows - total_anomalies)
+        normal_vs_anomaly = [
+            {"name": "Normal", "value": normal_count},
+            {"name": "Anomaly", "value": total_anomalies},
+        ]
+
+        # ── Time-series with anomaly flag + rolling average ───────────
+        ts_rows = conn.execute(
+            "SELECT date, ROUND(SUM(cost_usd),2) AS total "
+            "FROM daily_billing GROUP BY date ORDER BY date"
+        ).fetchall()
+        anom_dates = {r["date"] for r in conn.execute(
+            "SELECT DISTINCT date FROM detected_anomalies"
+        ).fetchall()}
+        ts_data = []
+        window: list = []
+        for r in ts_rows:
+            window.append(r["total"])
+            if len(window) > 7:
+                window.pop(0)
+            rolling_avg = round(sum(window) / len(window), 2)
+            ts_data.append({
+                "date": r["date"],
+                "cost": r["total"],
+                "rolling_avg": rolling_avg,
+                "is_anomaly": r["date"] in anom_dates,
+                "anomaly_cost": r["total"] if r["date"] in anom_dates else None,
+            })
+        cost_time_series_with_anomalies = ts_data
+
+        # ── Forecast comparison (actual vs expected from anomalies) ───
+        fc_rows = conn.execute(
+            "SELECT date, ROUND(AVG(cost_usd),2) AS actual, "
+            "ROUND(AVG(expected_cost),2) AS predicted "
+            "FROM detected_anomalies GROUP BY date ORDER BY date"
+        ).fetchall()
+        forecast_comparison = [
+            {"date": r["date"], "actual": r["actual"], "predicted": r["predicted"]}
+            for r in fc_rows
+        ]
+
+        # ── Detailed anomaly table (top 100) ──────────────────────────
+        da_rows = conn.execute(
+            "SELECT date, provider, service, team, environment, "
+            "ROUND(cost_usd,2) AS cost_usd, ROUND(expected_cost,2) AS expected_cost, "
+            "ROUND(deviation_pct,1) AS deviation_pct, severity, anomaly_type, detector, "
+            "ROUND(ABS(deviation_pct)/100.0, 4) AS anomaly_score, description "
+            "FROM detected_anomalies ORDER BY ABS(deviation_pct) DESC LIMIT 100"
+        ).fetchall()
+        detailed_anomalies = [dict(r) for r in da_rows]
+
+        # ── Provider+service stacked breakdown ────────────────────────
+        ps_rows = conn.execute(
+            "SELECT provider, service, COUNT(*) AS n FROM detected_anomalies "
+            "GROUP BY provider, service ORDER BY provider, n DESC"
+        ).fetchall()
+        provider_service_breakdown = [
+            {"provider": r["provider"].upper(), "service": r["service"], "count": r["n"]}
+            for r in ps_rows
+        ]
+
         total_cost = conn.execute("SELECT ROUND(SUM(cost_usd),2) AS s FROM daily_billing").fetchone()["s"] or 0
         anomaly_cost = conn.execute(
             "SELECT ROUND(SUM(cost_usd),2) AS s FROM detected_anomalies"
@@ -1123,6 +1225,16 @@ def upload_analytics():
         "anomaly_by_severity":  anomaly_by_severity,
         "anomaly_by_detector":  anomaly_by_detector,
         "anomaly_by_provider":  anomaly_by_provider,
+        "anomaly_by_service":   anomaly_by_service,
+        "anomaly_by_team":      anomaly_by_team,
+        "anomaly_by_region":    anomaly_by_region,
+        "spend_by_env":         spend_by_env,
+        "spend_by_region":      spend_by_region,
+        "normal_vs_anomaly":    normal_vs_anomaly,
+        "cost_time_series_with_anomalies": cost_time_series_with_anomalies,
+        "forecast_comparison":  forecast_comparison,
+        "detailed_anomalies":   detailed_anomalies,
+        "provider_service_breakdown": provider_service_breakdown,
         "top_anomalies":        top_anomalies,
         "model_stats": {
             "total_rows":       total_rows,

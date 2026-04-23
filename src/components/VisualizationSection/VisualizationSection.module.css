@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   VisualizationSection — Deep Analytics Dashboard
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin-top: 0.5rem;
+  animation: sectionFadeIn 0.6s ease;
+}
+
+@keyframes sectionFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section Header ──────────────────────────────────────────────────── */
+.sectionHeader {
+  display: flex; align-items: center; gap: 0.85rem;
+}
+.sectionIcon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(6,182,212,0.2));
+  display: flex; align-items: center; justify-content: center; color: #8b5cf6;
+}
+.sectionTitle {
+  font-size: 1.3rem; font-weight: 800; color: #f0f0f0; letter-spacing: -0.4px;
+}
+.sectionSub {
+  font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 0.15rem;
+}
+
+/* ── Sub-section Labels ──────────────────────────────────────────────── */
+.subLabel {
+  font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.3);
+  letter-spacing: 1.2px; text-transform: uppercase;
+  display: flex; align-items: center; gap: 0.4rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+/* ── Chart Cards ─────────────────────────────────────────────────────── */
+.chartCard {
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.chartCard:hover { border-color: rgba(6,182,212,0.18); }
+
+.chartCardHeader {
+  display: flex; align-items: center; gap: 0.45rem;
+  padding: 0.85rem 1.15rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.82rem; font-weight: 700; color: #e2e8f0;
+}
+.chartCardHeader svg { opacity: 0.6; }
+
+.chartBody { padding: 0.5rem 0.75rem 0.75rem; }
+
+/* ── Grid Layouts ─────────────────────────────────────────────────────── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.gridFull { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+
+@media (max-width: 900px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .grid3 { grid-template-columns: 1fr; }
+}
+
+/* ── Anomaly Dot on Time-series ──────────────────────────────────────── */
+.anomalyDot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #ef4444; border: 2px solid #fff;
+}
+
+/* ── Bar Chart Wrappers ──────────────────────────────────────────────── */
+.barWrap  { height: 220px; }
+.barWrapSm { height: 180px; }
+.lineWrap { height: 240px; }
+.lineWrapLg { height: 280px; }
+
+/* ── Severity badges in table ────────────────────────────────────────── */
+.sevBadge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0.12rem 0.5rem; border-radius: 4px;
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 0.5px; color: #000;
+  white-space: nowrap;
+}
+
+/* ── Results Table ───────────────────────────────────────────────────── */
+.tableWrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.table {
+  width: 100%; border-collapse: collapse; font-size: 0.76rem;
+  min-width: 900px;
+}
+
+.table thead tr {
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.table th {
+  padding: 0.6rem 0.9rem; text-align: left;
+  font-size: 0.62rem; font-weight: 800;
+  color: rgba(255,255,255,0.3); letter-spacing: 0.8px; text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: background 0.15s;
+}
+.table tbody tr:hover { background: rgba(255,255,255,0.025); }
+
+.table td {
+  padding: 0.55rem 0.9rem; color: rgba(255,255,255,0.65);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 180px;
+}
+.table td:first-child { color: rgba(255,255,255,0.4); font-size: 0.68rem; }
+.table .costCell { color: #06b6d4; font-weight: 700; font-variant-numeric: tabular-nums; }
+.table .deviUp   { color: #ef4444; font-weight: 700; }
+.table .deviDown { color: #22c55e; font-weight: 700; }
+.table .scoreCell { color: #8b5cf6; font-weight: 700; font-variant-numeric: tabular-nums; }
+.table .serviceCell { color: #f0f0f0; font-weight: 600; }
+
+/* ── Box-Plot Proxy (bar chart representing quartiles) ───────────────── */
+.boxRow {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-size: 0.75rem;
+}
+.boxLabel { width: 72px; color: rgba(255,255,255,0.55); font-weight: 600; flex-shrink: 0; }
+.boxTrack {
+  flex: 1; height: 18px; border-radius: 3px;
+  background: rgba(255,255,255,0.04); position: relative; overflow: hidden;
+}
+.boxFill {
+  position: absolute; top: 3px; bottom: 3px; border-radius: 2px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+}
+.boxMin { width: 3px; position: absolute; top: 0; bottom: 0; background: #06b6d4; }
+.boxMax { width: 3px; position: absolute; top: 0; bottom: 0; background: #ef4444; }
+.boxMedian { width: 2px; position: absolute; top: 0; bottom: 0; background: #f59e0b; }
+.boxStats { color: rgba(255,255,255,0.35); font-size: 0.68rem; white-space: nowrap; }
+
+/* ── Custom Recharts Tooltip ─────────────────────────────────────────── */
+.tooltip {
+  background: rgba(8,12,22,0.96); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 0.6rem 0.85rem; font-size: 0.73rem;
+}
+.tooltipLabel { color: rgba(255,255,255,0.4); font-size: 0.65rem; margin-bottom: 0.25rem; }
+.tooltipRow { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; }
+.tooltipDot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
