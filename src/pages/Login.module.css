@@ -1,0 +1,90 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+  padding: 1rem;
+}
+
+.card {
+  background: var(--bg-card);
+  padding: 2.5rem;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--border-card);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.header h2 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.formGroup input {
+  padding: 0.75rem;
+  border: 1px solid var(--border-mid);
+  border-radius: var(--r-md);
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  transition: border-color var(--t-fast);
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: var(--cyan-primary);
+}
+
+.footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  color: var(--cyan-primary);
+  font-weight: 500;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.linkButton:hover {
+  text-decoration: underline;
+  color: var(--cyan-deep);
+}

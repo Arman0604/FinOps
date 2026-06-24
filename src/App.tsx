@@ -4,11 +4,13 @@ import CommandCenter from './pages/CommandCenter';
 import SpendForecasting from './pages/SpendForecasting';
 import AnomalyWatch from './pages/AnomalyWatch';
 import DataUpload from './pages/DataUpload';
+import Login from './pages/Login';
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/login" element={<Login />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<CommandCenter />} />
           <Route path="budget-forecast" element={<SpendForecasting />} />

@@ -13,20 +13,20 @@ const Sidebar: React.FC = () => {
 
   return (
     <aside className={styles.sidebar}>
-      {/* ── Logo ─────────────────────────────────────────────────── */}
+      {/*Logo*/}
       <div className={styles.logoContainer}>
         <div className={styles.logoMark}>
           <div className={styles.logoIcon}>
-            <Zap size={16} color="#000" strokeWidth={2.5} />
+            <Zap size={16} color="#F8FAFC" strokeWidth={2.5} />
           </div>
-          <span className={styles.logoTitle}>CogniFinOps</span>
+          <span className={styles.logoTitle}>FinOps</span>
         </div>
         <div className={styles.logoSubtitle}>Intelligence Platform</div>
       </div>
 
       <div className={styles.divider} />
 
-      {/* ── Navigation ───────────────────────────────────────────── */}
+      {/*Navigation*/}
       <div className={styles.sectionLabel}>Navigation</div>
       <nav className={styles.nav}>
         {navItems.map((item) => (
@@ -44,7 +44,7 @@ const Sidebar: React.FC = () => {
         ))}
       </nav>
 
-      {/* ── System Status ─────────────────────────────────────────── */}
+      {/*System Status*/}
       <div className={styles.statusPanel}>
         <div className={styles.statusRow}>
           <div className={styles.statusDot} />

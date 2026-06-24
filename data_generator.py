@@ -173,10 +173,8 @@ def _apply_azure_anomaly(cost, date, service, team, env, cfg):
 
     return cost
 
-
-# ══════════════════════════════════════════════════════════════════════════════
 #  GCP Billing Export Generator
-# ══════════════════════════════════════════════════════════════════════════════
+
 GCP_SERVICES = {
     "Compute Engine":    {"base_cost": 3500, "sku": "N2 Instance Core",     "category": "compute"},
     "Cloud Storage":     {"base_cost": 540,  "sku": "Standard Storage",     "category": "storage"},

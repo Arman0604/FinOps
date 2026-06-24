@@ -1,6 +1,5 @@
-/* ═══════════════════════════════════════════════════════════════════
-   ANOMALY WATCH — full page styles
-════════════════════════════════════════════════════════════════════ */
+
+/* ANOMALY WATCH - full page styles */
 .page {
   display: flex;
   flex-direction: column;
@@ -8,7 +7,7 @@
   animation: fadeInUp 0.4s both;
 }
 
-/* ══════════ HERO HEADER ════════════════════════════════════════════ */
+/*HERO HEADER*/
 .heroCard {
   background: linear-gradient(135deg, #0C1628 0%, #0A1220 60%, #0E1228 100%);
   border: 1px solid var(--border-card);
@@ -99,7 +98,7 @@
   letter-spacing: 0.3px;
 }
 
-/* ── Hero title ─────────────────────────────────────────────────── */
+/*Hero title*/
 .heroTitle {
   font-size: 1.9rem;
   font-weight: 800;
@@ -127,7 +126,7 @@
   background-clip: text;
 }
 
-/* ── Hero description ───────────────────────────────────────────── */
+/*Hero description*/
 .heroDesc {
   font-size: 0.88rem;
   color: var(--text-secondary);
@@ -136,7 +135,7 @@
   /* highlight key numbers inside the description */
 }
 
-/* ── Hero bottom: 4 stat boxes ──────────────────────────────────── */
+/*Hero bottom: 4 stat boxes*/
 .heroStats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -253,7 +252,7 @@
   transition: background var(--t-normal);
 }
 
-/* ══════════ FILTER BAR ═════════════════════════════════════════════ */
+/*FILTER BAR*/
 .filterBar {
   display: flex;
   align-items: center;
@@ -292,7 +291,7 @@
   transition: all var(--t-fast);
 }
 .filterChip:hover { background: rgba(255,255,255,0.07); color: var(--text-primary); border-color: var(--border-mid); }
-.filterChip.chipActive { border-color: transparent; color: #000; }
+.filterChip.chipActive { border-color: transparent; color: #F8FAFC; }
 
 .filterSpacer { flex: 1; min-width: 10px; }
 
@@ -320,7 +319,7 @@
 }
 .btnGhost:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
 
-/* ══════════ ROOT CAUSE VIZ ═════════════════════════════════════════ */
+/*ROOT CAUSE VIZ*/
 .vizCard {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -457,7 +456,7 @@
   transition: width 0.7s var(--ease);
 }
 
-/* ══════════ ANOMALY LIST ════════════════════════════════════════════ */
+/*ANOMALY LIST*/
 .anomalyList {
   display: flex;
   flex-direction: column;
@@ -491,7 +490,7 @@
   border-radius: var(--r-full);
   font-size: 0.63rem;
   font-weight: 800;
-  color: #000;
+  color: #F8FAFC;
   white-space: nowrap;
   font-family: var(--font-mono);
   letter-spacing: 1px;

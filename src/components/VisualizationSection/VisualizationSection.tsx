@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend, ReferenceLine, Cell, ComposedChart, Area,
+  Tooltip, ResponsiveContainer, Legend, Cell, ComposedChart, Area,
 } from 'recharts';
 import { BarChart2, TrendingUp, AlertTriangle, Activity, Table2, GitBranch } from 'lucide-react';
 import type { UploadAnalytics } from '../../data/api';
@@ -55,7 +55,7 @@ const SimpleBar: React.FC<{
           tickFormatter={v => isCost ? `$${(v/1000).toFixed(0)}k` : String(v)} width={isCost ? 50 : 35} />
         <Tooltip content={<Tip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
         <Bar dataKey="value" name={isCost ? 'Spend' : 'Count'} radius={[4,4,0,0]} maxBarSize={48}>
-          {data.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+          {data.map((_, i) => <Cell key={i} fill={isCost ? PALETTE[i % PALETTE.length] : color} />)}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -87,7 +87,7 @@ const BoxPlotProxy: React.FC<{ data: UploadAnalytics['cost_by_provider'] }> = ({
   const max = Math.max(...data.map(d => d.value));
   return (
     <div style={{ padding: '0.5rem 0' }}>
-      {data.map((d, i) => {
+      {data.map((d) => {
         const pct = max > 0 ? (d.value / max) * 100 : 0;
         const q1 = pct * 0.25; const q3 = pct * 0.75; const med = pct * 0.55;
         return (
@@ -114,7 +114,6 @@ interface Props { analytics: UploadAnalytics; }
 
 const VisualizationSection: React.FC<Props> = ({ analytics: a }) => {
   const ts = a.cost_time_series_with_anomalies ?? [];
-  const anomalyPoints = ts.filter(d => d.is_anomaly);
 
   // Build stacked bar for provider-service breakdown
   const provServices = useMemo(() => {

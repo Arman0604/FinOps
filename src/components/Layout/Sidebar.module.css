@@ -1,4 +1,4 @@
-/* ═══════════ SIDEBAR ════════════════════════════════════════════════ */
+/*SIDEBAR*/
 .sidebar {
   width: 240px;
   background: linear-gradient(180deg, var(--bg-sidebar) 0%, #050B16 100%);
@@ -24,7 +24,7 @@
   pointer-events: none;
 }
 
-/* ── Logo ─────────────────────────────────────────────────────────── */
+/*Logo*/
 .logoContainer {
   padding: 0 var(--s5) var(--s6);
   position: relative;
@@ -67,14 +67,14 @@
   padding-left: 42px;
 }
 
-/* ── Divider ──────────────────────────────────────────────────────── */
+/*Divider*/
 .divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-mid), transparent);
   margin: 0 var(--s4) var(--s5);
 }
 
-/* ── Section label ────────────────────────────────────────────────── */
+/*Section label*/
 .sectionLabel {
   font-size: 0.6rem;
   font-weight: 700;
@@ -85,7 +85,7 @@
   font-family: var(--font-mono);
 }
 
-/* ── Nav ──────────────────────────────────────────────────────────── */
+/*Nav*/
 .nav {
   flex: 1;
   display: flex;
@@ -167,7 +167,7 @@
   border-radius: var(--r-full);
 }
 
-/* ── System status ────────────────────────────────────────────────── */
+/*System status*/
 .statusPanel {
   margin: var(--s4) var(--s3) 0;
   background: rgba(255,255,255,0.03);

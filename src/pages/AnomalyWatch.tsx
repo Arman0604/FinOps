@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   GitMerge, Cloud, Server, Database, Activity,
   TrendingUp, Loader2, RefreshCw, Filter,
-  AlertTriangle, Zap, Target, DollarSign,
+  AlertTriangle, Target, DollarSign,
 } from 'lucide-react';
 import { api } from '../data/api';
 import type { AnomalyItem, AnomaliesResponse } from '../data/api';
@@ -15,7 +15,7 @@ const SEV_COLORS: Record<string, string> = {
   LOW:      '#06B6D4',
 };
 
-/* ═══════════════ COMPONENT ═════════════════════════════════════════ */
+/*COMPONENT*/
 const AnomalyWatch: React.FC = () => {
   const [data,     setData]     = useState<AnomaliesResponse | null>(null);
   const [loading,  setLoading]  = useState(true);
@@ -60,7 +60,7 @@ const AnomalyWatch: React.FC = () => {
     : [];
   const maxShap = shapFactors.length ? Math.max(...shapFactors.map(([, v]) => Math.abs(v))) : 1;
 
-  /* ── Parsed service / team from focused anomaly ─────────────────── */
+  /*Parsed service / team from focused anomaly*/
   const sevColor  = focus ? SEV_COLORS[focus.severity] : 'var(--alert-red)';
   const deviationPos = (focus?.deviation_pct ?? 0) > 0;
 
@@ -76,15 +76,15 @@ const AnomalyWatch: React.FC = () => {
   return (
     <div className={styles.page}>
 
-      {/* ════════════════ HERO CARD ══════════════════════════════════ */}
+      {/*HERO CARD*/}
       <div className={styles.heroCard}>
         <div className={styles.heroAccentBar} style={{ background: `linear-gradient(90deg, transparent 0%, ${sevColor} 30%, #F97316 60%, transparent 100%)` }} />
 
-        {/* ── Eyebrow row ───────────────────────────────────────────── */}
+        {/*Eyebrow row*/}
         <div className={styles.heroBrow}>
           <span
             className={styles.severityBadge}
-            style={{ background: sevColor, color: '#000' }}
+            style={{ background: sevColor, color: '#F8FAFC' }}
           >
             <AlertTriangle size={11} strokeWidth={3} />
             {focus?.severity ?? 'NO'}&nbsp;ANOMALY
@@ -97,7 +97,7 @@ const AnomalyWatch: React.FC = () => {
           </span>
         </div>
 
-        {/* ── Title ─────────────────────────────────────────────────── */}
+        {/*Title*/}
         <h1 className={styles.heroTitle}>
           {focus ? (
             <>
@@ -110,12 +110,12 @@ const AnomalyWatch: React.FC = () => {
           )}
         </h1>
 
-        {/* ── Description ───────────────────────────────────────────── */}
+        {/*Description*/}
         <p className={styles.heroDesc}>
           {focus?.description ?? 'Run anomaly detection to populate this view.'}
         </p>
 
-        {/* ════ 4 STAT BOXES ════════════════════════════════════════ */}
+        {/*4 STAT BOXES*/}
         <div className={styles.heroStats}>
 
           {/* 1 — Projected Drift */}
@@ -189,7 +189,7 @@ const AnomalyWatch: React.FC = () => {
         </div>
       </div>
 
-      {/* ════════════════ FILTER BAR ═════════════════════════════════ */}
+      {/*FILTER BAR*/}
       <div className={styles.filterBar}>
         <Filter size={13} className={styles.filterIcon} />
         <span className={styles.filterLabel}>Severity</span>
@@ -199,7 +199,7 @@ const AnomalyWatch: React.FC = () => {
             className={`${styles.filterChip} ${severity === s ? styles.chipActive : ''}`}
             style={
               severity === s
-                ? { background: SEV_COLORS[s] ?? 'var(--cyan-primary)', color: '#000', borderColor: 'transparent' }
+                ? { background: SEV_COLORS[s] ?? 'var(--cyan-primary)', color: '#F8FAFC', borderColor: 'transparent' }
                 : {}
             }
             onClick={() => setSeverity(s)}
@@ -214,7 +214,7 @@ const AnomalyWatch: React.FC = () => {
         </button>
       </div>
 
-      {/* ════════════════ ROOT CAUSE VIZ ════════════════════════════ */}
+      {/*ROOT CAUSE VIZ*/}
       {focus && (
         <div className={styles.vizCard}>
           <div className={styles.vizHeader}>
@@ -291,7 +291,7 @@ const AnomalyWatch: React.FC = () => {
         </div>
       )}
 
-      {/* ════════════════ ANOMALY LIST ═══════════════════════════════ */}
+      {/*ANOMALY LIST*/}
       {d.items.length > 0 ? (
         <div className={styles.anomalyList}>
           {d.items.map(item => (
@@ -302,7 +302,7 @@ const AnomalyWatch: React.FC = () => {
             >
               <span
                 className={styles.anomalySeverityTag}
-                style={{ background: SEV_COLORS[item.severity] ?? 'var(--bg-card)', color: '#000' }}
+                style={{ background: SEV_COLORS[item.severity] ?? 'var(--bg-card)', color: '#F8FAFC' }}
               >
                 {item.severity}
               </span>

@@ -5,8 +5,10 @@ Provides fast query helpers used by Phase 2 (anomaly detection)
 and Phase 3 (forecasting).
 """
 
+import shutil
 import sqlite3
 import sys
+import tempfile
 
 # Make stdout UTF-8 safe on Windows
 try:
@@ -19,7 +21,29 @@ import os
 from datetime import datetime, timedelta
 from contextlib import contextmanager
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "data", "database", "finops.db")
+PROJECT_ROOT = os.path.dirname(__file__)
+BUNDLED_DB_PATH = os.path.join(PROJECT_ROOT, "data", "database", "finops.db")
+VERCEL_BUNDLED_DB_PATH = os.path.join(PROJECT_ROOT, "api", "finops.db")
+
+
+def _resolve_db_path() -> str:
+    if os.getenv("VERCEL") != "1":
+        return BUNDLED_DB_PATH
+
+    tmp_db_path = os.path.join(tempfile.gettempdir(), "finops.db")
+    bundled_db_path = VERCEL_BUNDLED_DB_PATH if os.path.exists(VERCEL_BUNDLED_DB_PATH) else BUNDLED_DB_PATH
+
+    if os.path.exists(bundled_db_path):
+        bundled_size = os.path.getsize(bundled_db_path)
+        tmp_size = os.path.getsize(tmp_db_path) if os.path.exists(tmp_db_path) else -1
+        if tmp_size != bundled_size:
+            shutil.copyfile(bundled_db_path, tmp_db_path)
+        return tmp_db_path
+
+    return tmp_db_path
+
+
+DB_PATH = _resolve_db_path()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -132,7 +156,10 @@ CREATE INDEX IF NOT EXISTS idx_forecast_date  ON forecasts(target_date, horizon)
 def get_conn(db_path: str = DB_PATH):
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
+    if os.getenv("VERCEL") == "1":
+        conn.execute("PRAGMA journal_mode=MEMORY")
+    else:
+        conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     try:
         yield conn

@@ -1,4 +1,4 @@
-/* ═══════════════ PAGE ══════════════════════════════════════════════ */
+/*PAGE*/
 .page {
   display: flex;
   flex-direction: column;
@@ -6,7 +6,7 @@
   animation: fadeInUp 0.4s both;
 }
 
-/* ═══════════════ PAGE HEADER ═══════════════════════════════════════ */
+/*PAGE HEADER*/
 .pageHeader {
   display: flex;
   align-items: flex-start;
@@ -43,7 +43,7 @@
   flex-wrap: wrap;
 }
 
-/* ═══════════════ ACTION BUTTONS ════════════════════════════════════ */
+/*ACTION BUTTONS*/
 .btnGhost {
   display: inline-flex;
   align-items: center;
@@ -75,7 +75,7 @@
   font-weight: 700;
   background: linear-gradient(135deg, var(--cyan-deep), var(--cyan-primary));
   border: none;
-  color: #000;
+  color: #F8FAFC;
   cursor: pointer;
   transition: all var(--t-normal);
   box-shadow: 0 2px 12px var(--cyan-glow);
@@ -94,7 +94,7 @@
   cursor: not-allowed;
 }
 
-/* ═══════════════ METRICS ROW ═══════════════════════════════════════ */
+/*METRICS ROW*/
 .metricsRow {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -105,7 +105,7 @@
 @media (max-width: 750px)  { .metricsRow { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 520px)  { .metricsRow { grid-template-columns: 1fr; } }
 
-/* ═══════════════ METRIC CARD ════════════════════════════════════════ */
+/*METRIC CARD*/
 .metricCard {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -200,7 +200,7 @@
 .metricActive { color: var(--emerald); }
 .metricAlert  { color: var(--alert-red); }
 
-/* ═══════════════ COMMAND CENTER BLOCK ══════════════════════════════ */
+/*COMMAND CENTER BLOCK*/
 .commandBlock {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -249,7 +249,7 @@
   color: var(--text-muted);
 }
 
-/* ── Flow pipeline ───────────────────────────────────────────────── */
+/*Flow pipeline*/
 .pipeline {
   display: flex;
   align-items: center;
@@ -332,7 +332,7 @@
   border-left-color: var(--cyan-primary);
 }
 
-/* ── AI Rec card inside pipeline ─────────────────────────────────── */
+/*AI Rec card inside pipeline*/
 .aiRecCard {
   background: rgba(6,182,212,0.06);
   border: 1px solid var(--border-cyan);
@@ -371,7 +371,7 @@
   border-radius: var(--r-md);
   background: linear-gradient(135deg, var(--cyan-deep), var(--cyan-primary));
   border: none;
-  color: #000;
+  color: #F8FAFC;
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
@@ -385,7 +385,7 @@
   transform: translateY(-1px);
 }
 
-/* ═══════════════ BOTTOM GRID ════════════════════════════════════════ */
+/*BOTTOM GRID*/
 .bottomGrid {
   display: grid;
   grid-template-columns: 1.8fr 1fr 1fr;
@@ -396,7 +396,7 @@
 @media (max-width: 1200px) { .bottomGrid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 750px)  { .bottomGrid { grid-template-columns: 1fr; } }
 
-/* ═══════════════ CHART CARD ════════════════════════════════════════ */
+/*CHART CARD*/
 .chartCard {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -461,7 +461,7 @@
   height: 240px;
 }
 
-/* ═══════════════ SMALL CARDS ════════════════════════════════════════ */
+/*SMALL CARDS*/
 .smallCard {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
@@ -482,7 +482,7 @@
   font-family: var(--font-mono);
 }
 
-/* ── Budget rows ─────────────────────────────────────────────────── */
+/*Budget rows*/
 .budgetRow {
   display: flex;
   flex-direction: column;
@@ -528,7 +528,7 @@
   filter: blur(2px);
 }
 
-/* ── Provider distribution ───────────────────────────────────────── */
+/*Provider distribution*/
 .providerList {
   flex: 1;
   display: flex;
@@ -566,7 +566,7 @@
   gap: var(--s4);
 }
 
-/* ═══════════════ DETECTION PANEL (PREMIUM STEP TIMELINE) ══════════ */
+/*DETECTION PANEL (PREMIUM STEP TIMELINE)*/
 .detPanel {
   background: linear-gradient(135deg,
     rgba(6,182,212,0.05) 0%,

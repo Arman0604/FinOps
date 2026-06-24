@@ -11,7 +11,7 @@ import styles from './SpendForecasting.module.css';
 const HORIZON_OPTIONS = [7, 30, 90] as const;
 type Horizon = typeof HORIZON_OPTIONS[number];
 
-/* ─── Custom tooltip ────────────────────────────────────────────── */
+/*Custom tooltip*/
 const ForecastTip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (

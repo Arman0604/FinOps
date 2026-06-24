@@ -4,10 +4,15 @@
 // The base URL auto-detects dev (Vite) vs prod.
 // ------------------------------------------------------------------
 
-const BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+const BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:8000" : "");
+
+function apiUrl(path: string): string {
+  const base = BASE || window.location.origin;
+  return new URL(path, base).toString();
+}
 
 async function get<T>(path: string, params?: Record<string, string | number | undefined>): Promise<T> {
-  const url = new URL(`${BASE}${path}`);
+  const url = new URL(apiUrl(path));
   if (params) {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
@@ -19,7 +24,7 @@ async function get<T>(path: string, params?: Record<string, string | number | un
 }
 
 async function post<T>(path: string, body?: unknown): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetch(apiUrl(path), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
@@ -214,7 +219,11 @@ export const api = {
   budgets:      (team?: string)                    => get<{ items: BudgetItem[] }>("/api/budgets", team ? { team } : undefined),
   runDetection:    ()                                 => post<{ status: string; message: string }>("/api/run-detection"),
   detectionStatus: ()                                 => get<DetectionStatus>("/api/detection-status"),
-  runForecast:     (horizons = [7, 30, 90])           => post<{ status: string; message: string }>("/api/run-forecast"),
+  runForecast:     (horizons = [7, 30, 90]) => {
+    const params = new URLSearchParams();
+    horizons.forEach((horizon) => params.append("horizons", String(horizon)));
+    return post<{ status: string; message: string }>(`/api/run-forecast?${params.toString()}`);
+  },
   chat:         (message: string, history: ChatMessage[] = []) =>
     post<ChatResponse>("/api/chat", { message, history }),
 

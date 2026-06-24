@@ -1,0 +1,227 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="940" viewBox="0 0 1500 940" role="img" aria-labelledby="title desc">
+  <title id="title">FinOps Project Architecture</title>
+  <desc id="desc">Cloud cost intelligence platform architecture showing frontend, backend API, data and ML pipeline, SQLite analytics database, API usage, and deployment flow.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fbff; }
+      .title { font: 700 52px Arial, sans-serif; fill: #081936; }
+      .subtitle { font: 400 28px Arial, sans-serif; fill: #102343; }
+      .section-title { font: 700 20px Arial, sans-serif; }
+      .box-title { font: 700 18px Arial, sans-serif; }
+      .text { font: 400 15px Arial, sans-serif; fill: #14213d; }
+      .small { font: 400 13px Arial, sans-serif; fill: #334155; }
+      .tiny { font: 400 12px Arial, sans-serif; fill: #475569; }
+      .blue { stroke: #1d76d3; fill: #eef7ff; }
+      .green { stroke: #4f9148; fill: #f1fbf0; }
+      .orange { stroke: #e09a21; fill: #fff7e8; }
+      .purple { stroke: #7b4bc2; fill: #f5efff; }
+      .panel { stroke-width: 1.5; rx: 12; }
+      .inner { fill: #ffffff; stroke-width: 1.4; rx: 10; }
+      .node { fill: #ffffff; stroke-width: 1.3; rx: 9; }
+      .arrow { stroke: #111827; stroke-width: 2.8; fill: none; marker-end: url(#arrowhead); }
+      .dataarrow { stroke: #111827; stroke-width: 2.3; stroke-dasharray: 8 6; fill: none; marker-end: url(#arrowhead); }
+      .apiarrow { stroke: #111827; stroke-width: 2.8; fill: none; marker-end: url(#arrowhead); }
+      .line { stroke: #cbd5e1; stroke-width: 1; }
+      .blueText { fill: #1268c3; }
+      .greenText { fill: #237a31; }
+      .orangeText { fill: #b56b00; }
+      .purpleText { fill: #5d35a8; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#111827" />
+    </marker>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.10" />
+    </filter>
+  </defs>
+
+  <rect class="bg" width="1500" height="940" />
+  <text class="title" x="750" y="64" text-anchor="middle">FinOps Project Architecture</text>
+  <line class="line" x1="255" y1="104" x2="505" y2="104" />
+  <circle cx="520" cy="104" r="5" fill="#1772cf" />
+  <text class="subtitle" x="750" y="113" text-anchor="middle">Cloud Cost Intelligence Platform</text>
+  <circle cx="980" cy="104" r="5" fill="#1772cf" />
+  <line class="line" x1="995" y1="104" x2="1245" y2="104" />
+
+  <rect class="panel blue" x="34" y="148" width="300" height="455" filter="url(#softShadow)" />
+  <circle cx="82" cy="176" r="17" fill="#1d76d3" />
+  <text x="82" y="183" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#fff">1</text>
+  <text class="section-title blueText" x="112" y="184">Frontend / User Layer</text>
+  <rect class="inner blue" x="46" y="207" width="276" height="384" />
+  <text class="box-title blueText" x="184" y="244" text-anchor="middle">Frontend (React + Vite)</text>
+  <rect class="node blue" x="58" y="265" width="252" height="66" />
+  <rect x="80" y="283" width="14" height="14" rx="3" fill="#1772cf" />
+  <rect x="99" y="283" width="14" height="14" rx="3" fill="#1772cf" opacity="0.88" />
+  <rect x="80" y="303" width="14" height="14" rx="3" fill="#1772cf" opacity="0.88" />
+  <text class="text" x="134" y="305">Command Center</text>
+  <rect class="node blue" x="58" y="345" width="252" height="66" />
+  <path d="M94 360 L111 370 L111 393 L94 403 L77 393 L77 370 Z" fill="#ff8a22" />
+  <text x="94" y="387" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="#fff">!</text>
+  <text class="text" x="134" y="385">Anomaly Watch</text>
+  <rect class="node blue" x="58" y="425" width="252" height="66" />
+  <rect x="78" y="443" width="32" height="32" rx="4" fill="none" stroke="#139447" stroke-width="3" />
+  <path d="M83 466 L91 458 L99 462 L106 451" stroke="#139447" stroke-width="3" fill="none" />
+  <text class="text" x="134" y="465">Spend Forecasting</text>
+  <rect class="node blue" x="58" y="505" width="252" height="66" />
+  <circle cx="94" cy="538" r="19" fill="none" stroke="#773dd6" stroke-width="3" />
+  <path d="M94 521 V555 M80 538 H108 M83 528 L105 550 M105 528 L83 550" stroke="#773dd6" stroke-width="2" />
+  <text class="text" x="134" y="545">AI Intelligence Panel</text>
+
+  <path d="M108 722 C108 688 142 688 142 722" fill="none" stroke="#1d76d3" stroke-width="4" />
+  <circle cx="125" cy="675" r="18" fill="none" stroke="#1d76d3" stroke-width="4" />
+  <rect x="136" y="657" width="94" height="73" rx="8" fill="#fff" stroke="#1d76d3" stroke-width="4" />
+  <circle cx="150" cy="667" r="3" fill="#fff" />
+  <circle cx="162" cy="667" r="3" fill="#fff" />
+  <circle cx="174" cy="667" r="3" fill="#fff" />
+  <text class="text" x="165" y="755" text-anchor="middle">User Browser</text>
+
+  <rect class="panel green" x="386" y="148" width="265" height="505" filter="url(#softShadow)" />
+  <circle cx="419" cy="176" r="17" fill="#4f9148" />
+  <text x="419" y="183" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#fff">2</text>
+  <text class="section-title greenText" x="449" y="184">Backend / API Layer</text>
+  <rect class="inner green" x="398" y="212" width="241" height="421" />
+  <text class="box-title greenText" x="518" y="248" text-anchor="middle">FastAPI Backend</text>
+  <rect class="node green" x="421" y="276" width="202" height="84" />
+  <circle cx="450" cy="320" r="5" fill="none" stroke="#159447" stroke-width="2.5" />
+  <circle cx="437" cy="333" r="5" fill="none" stroke="#159447" stroke-width="2.5" />
+  <circle cx="463" cy="333" r="5" fill="none" stroke="#159447" stroke-width="2.5" />
+  <path d="M450 325 V333 M450 325 L437 333 M450 325 L463 333 M450 300 V315" stroke="#159447" stroke-width="2.5" fill="none" />
+  <text class="text" x="518" y="312" text-anchor="middle">API Orchestrator</text>
+  <text class="small" x="518" y="337" text-anchor="middle">(api.py / api/index.py)</text>
+  <rect class="node green" x="454" y="412" width="170" height="83" />
+  <ellipse cx="485" cy="441" rx="14" ry="7" fill="#159447" />
+  <path d="M471 441 V467 C471 477 499 477 499 467 V441" fill="#159447" opacity="0.88" />
+  <text class="text" x="540" y="447" text-anchor="middle">Storage Layer</text>
+  <text class="small" x="540" y="472" text-anchor="middle">(storage.py)</text>
+  <rect class="node green" x="421" y="552" width="202" height="83" />
+  <rect x="438" y="585" width="28" height="22" rx="7" fill="#159447" />
+  <circle cx="448" cy="592" r="2" fill="#fff" />
+  <circle cx="457" cy="592" r="2" fill="#fff" />
+  <path d="M452 577 V585 M438 596 H431 M466 596 H473" stroke="#159447" stroke-width="4" />
+  <text class="text" x="536" y="584" text-anchor="middle">AI Assistant Service</text>
+  <text class="small" x="536" y="609" text-anchor="middle">(chatbot.py)</text>
+
+  <rect class="panel orange" x="692" y="148" width="254" height="620" filter="url(#softShadow)" />
+  <circle cx="725" cy="176" r="17" fill="#e09a21" />
+  <text x="725" y="183" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#fff">3</text>
+  <text class="section-title orangeText" x="755" y="184">Data + ML Pipeline</text>
+  <rect class="inner orange" x="704" y="212" width="230" height="525" />
+  <text class="box-title orangeText" x="819" y="248" text-anchor="middle">Data &amp; ML Jobs</text>
+  <rect class="node blue" x="720" y="272" width="193" height="84" />
+  <path d="M735 291 H757 L771 305 V333 H735 Z" fill="none" stroke="#1d76d3" stroke-width="2" />
+  <path d="M757 291 V305 H771" fill="none" stroke="#1d76d3" stroke-width="2" />
+  <text class="text" x="817" y="304" text-anchor="middle">data_generator.py</text>
+  <text class="small" x="817" y="330" text-anchor="middle">synthetic bills</text>
+  <rect class="node" x="720" y="395" width="193" height="82" stroke="#23a6bd" />
+  <path d="M738 415 H767 L758 430 V454 L747 460 V430 Z" fill="none" stroke="#168ea5" stroke-width="3" />
+  <text class="text" x="817" y="427" text-anchor="middle">normalizer.py</text>
+  <text class="small" x="817" y="453" text-anchor="middle">unified schema</text>
+  <rect class="node" x="720" y="517" width="197" height="82" stroke="#f05a24" />
+  <circle cx="750" cy="554" r="17" fill="none" stroke="#f05a24" stroke-width="3" />
+  <path d="M740 555 L746 546 L752 562 L758 552 L766 560" stroke="#f05a24" stroke-width="2.4" fill="none" />
+  <text class="text" x="822" y="548" text-anchor="middle" fill="#dc3d00">anomaly_detector.py</text>
+  <text class="small" x="822" y="574" text-anchor="middle">anomaly detection</text>
+  <rect class="node purple" x="720" y="640" width="197" height="82" />
+  <path d="M737 688 L737 671 M750 688 L750 659 M763 688 L763 675 M778 688 L778 650" stroke="#6d39c7" stroke-width="3" />
+  <path d="M738 655 L750 644 L760 652 L778 631" stroke="#6d39c7" stroke-width="3" fill="none" />
+  <text class="text" x="822" y="671" text-anchor="middle" fill="#5d35a8">forecasting_engine.py</text>
+  <text class="small" x="822" y="697" text-anchor="middle">spend forecasting</text>
+
+  <rect class="panel purple" x="978" y="148" width="240" height="635" filter="url(#softShadow)" />
+  <circle cx="1011" cy="176" r="17" fill="#6d39c7" />
+  <text x="1011" y="183" text-anchor="middle" font-family="Arial" font-size="20" font-weight="700" fill="#fff">4</text>
+  <text class="section-title purpleText" x="1041" y="184">Analytics Database</text>
+  <ellipse cx="1100" cy="260" rx="98" ry="27" fill="#f5efff" stroke="#7b4bc2" stroke-width="1.5" />
+  <path d="M1002 260 V720 C1002 755 1198 755 1198 720 V260" fill="none" stroke="#7b4bc2" stroke-width="1.5" />
+  <text class="box-title purpleText" x="1100" y="334" text-anchor="middle">SQLite - finops.db</text>
+  <rect class="inner purple" x="1014" y="358" width="172" height="373" />
+  <g class="text">
+    <rect x="1029" y="382" width="23" height="25" fill="#fff" stroke="#475569" />
+    <path d="M1034 390 H1047 M1034 398 H1047 M1040 386 V403" stroke="#475569" />
+    <text x="1066" y="401">daily_billing</text>
+    <line x1="1028" y1="434" x2="1174" y2="434" stroke="#c4b5fd" stroke-dasharray="5 4" />
+    <rect x="1029" y="456" width="23" height="25" fill="#fff" stroke="#475569" />
+    <path d="M1034 464 H1047 M1034 472 H1047 M1040 460 V477" stroke="#475569" />
+    <text x="1066" y="475">detected_anomalies</text>
+    <line x1="1028" y1="509" x2="1174" y2="509" stroke="#c4b5fd" stroke-dasharray="5 4" />
+    <rect x="1029" y="532" width="23" height="25" fill="#fff" stroke="#475569" />
+    <path d="M1034 540 H1047 M1034 548 H1047 M1040 536 V553" stroke="#475569" />
+    <text x="1066" y="551">forecasts</text>
+    <line x1="1028" y1="584" x2="1174" y2="584" stroke="#c4b5fd" stroke-dasharray="5 4" />
+    <rect x="1029" y="607" width="23" height="25" fill="#fff" stroke="#475569" />
+    <path d="M1034 615 H1047 M1034 623 H1047 M1040 611 V628" stroke="#475569" />
+    <text x="1066" y="626">budgets</text>
+    <line x1="1028" y1="659" x2="1174" y2="659" stroke="#c4b5fd" stroke-dasharray="5 4" />
+    <rect x="1029" y="682" width="23" height="25" fill="#fff" stroke="#475569" />
+    <path d="M1034 690 H1047 M1034 698 H1047 M1040 686 V703" stroke="#475569" />
+    <text x="1066" y="701">anomaly_labels</text>
+  </g>
+
+  <rect class="panel blue" x="1236" y="171" width="230" height="348" />
+  <path d="M1270 196 V220 M1259 207 H1281 M1263 220 C1263 235 1277 235 1277 220" stroke="#1d76d3" stroke-width="4" fill="none" />
+  <text class="box-title blueText" x="1353" y="214" text-anchor="middle">Main API Usage</text>
+  <circle cx="1261" cy="256" r="4" fill="#1772cf" />
+  <text class="text blueText" x="1280" y="262">/api/summary</text>
+  <text class="small" x="1280" y="287">KPIs and provider split</text>
+  <circle cx="1261" cy="323" r="4" fill="#1772cf" />
+  <text class="text blueText" x="1280" y="329">/api/anomalies</text>
+  <text class="small" x="1280" y="354">anomaly list and factors</text>
+  <circle cx="1261" cy="390" r="4" fill="#1772cf" />
+  <text class="text blueText" x="1280" y="396">/api/forecast</text>
+  <text class="small" x="1280" y="421">actual vs p10/p50/p90</text>
+  <circle cx="1261" cy="457" r="4" fill="#1772cf" />
+  <text class="text blueText" x="1280" y="463">/api/chat</text>
+  <text class="small" x="1280" y="488">FinOps Q&amp;A</text>
+
+  <rect class="panel green" x="1236" y="552" width="230" height="218" />
+  <circle cx="1270" cy="588" r="18" fill="#188a36" />
+  <path d="M1270 573 V603 M1255 588 H1285 M1260 578 L1280 598 M1280 578 L1260 598" stroke="#fff" stroke-width="4" />
+  <text class="box-title greenText" x="1363" y="587" text-anchor="middle">How it works</text>
+  <circle cx="1259" cy="626" r="4" fill="#4f9148" />
+  <text class="small" x="1274" y="631">Build Mode: generate,</text>
+  <text class="small" x="1274" y="655">normalize, detect, forecast,</text>
+  <text class="small" x="1274" y="679">store in SQLite</text>
+  <circle cx="1259" cy="718" r="4" fill="#4f9148" />
+  <text class="small" x="1274" y="723">Serving Mode: FastAPI reads</text>
+  <text class="small" x="1274" y="747">SQLite and serves React</text>
+
+  <path class="apiarrow" d="M334 317 H418" />
+  <text class="small" x="368" y="362">Dashboard</text>
+  <text class="small" x="368" y="386">API Calls</text>
+  <path class="apiarrow" d="M334 536 H403 C412 536 415 360 421 360" stroke="#7b4bc2" />
+  <path class="arrow" d="M545 360 V410" />
+  <path class="arrow" d="M540 552 V500" />
+  <path class="arrow" d="M623 454 H676 V314 H716" />
+  <path class="arrow" d="M623 594 H676 V354 H716" />
+  <path class="arrow" d="M914 314 H967 V346 H1002" />
+  <path class="dataarrow" d="M918 558 H970 V550 H1002" />
+  <path class="dataarrow" d="M918 680 H970 V625 H1002" />
+  <path class="arrow" d="M816 356 V392" />
+  <path class="arrow" d="M816 477 V514" />
+  <path class="arrow" d="M816 599 V637" />
+
+  <g>
+    <line x1="58" y1="796" x2="118" y2="796" stroke="#111827" stroke-width="2.4" marker-end="url(#arrowhead)" />
+    <text class="small" x="136" y="800">Serving / API Flow</text>
+    <line x1="58" y1="831" x2="118" y2="831" stroke="#111827" stroke-width="2.2" stroke-dasharray="8 6" marker-end="url(#arrowhead)" />
+    <text class="small" x="136" y="835">Data / ML Flow (Build Mode)</text>
+  </g>
+
+  <rect class="panel blue" x="24" y="870" width="1040" height="54" />
+  <text class="small" x="66" y="902">User Browser</text>
+  <path class="arrow" d="M180 898 H260" />
+  <text class="small" x="286" y="902">React Frontend</text>
+  <path class="arrow" d="M382 898 H452" />
+  <text class="small" x="475" y="902">FastAPI Backend</text>
+  <path class="arrow" d="M615 898 H685" />
+  <text class="small" x="706" y="902">SQLite Database</text>
+  <path class="arrow" d="M830 898 H900" />
+  <text class="small" x="924" y="902">ML Pipeline</text>
+
+  <rect class="panel" x="1188" y="838" width="278" height="86" fill="#ffffff" stroke="#94a3b8" />
+  <text class="box-title" x="1260" y="873">Deployment</text>
+  <circle cx="1215" cy="894" r="4" fill="#64748b" />
+  <text class="small" x="1230" y="899">Local: Python stack + SQLite</text>
+  <circle cx="1215" cy="919" r="4" fill="#64748b" />
+  <text class="small" x="1230" y="924">Vercel: static app + API function</text>
+</svg>

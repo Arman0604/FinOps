@@ -1,4 +1,4 @@
-/* ═══════════════ AI PANEL ══════════════════════════════════════════ */
+/*AI PANEL*/
 .aiPanel {
   width: 300px;
   background: linear-gradient(180deg, #080F1D 0%, #050A14 100%);
@@ -23,7 +23,7 @@
   pointer-events: none;
 }
 
-/* ── Header ─────────────────────────────────────────────────────── */
+/*Header*/
 .header {
   padding: var(--s4) var(--s5);
   border-bottom: 1px solid var(--border-light);
@@ -75,7 +75,7 @@
   font-weight: 600;
 }
 
-/* ── Tab bar ─────────────────────────────────────────────────────── */
+/*Tab bar*/
 .tabBar {
   display: flex;
   padding: 6px var(--s4);
@@ -111,7 +111,7 @@
   border: 1px solid rgba(139,92,246,0.2);
 }
 
-/* ── Content scroll area ─────────────────────────────────────────── */
+/*Content scroll area*/
 .content {
   flex: 1;
   overflow-y: auto;
@@ -121,7 +121,7 @@
   gap: var(--s3);
 }
 
-/* ── Quick prompts ───────────────────────────────────────────────── */
+/*Quick prompts*/
 .quickPromptsLabel {
   font-size: 0.62rem;
   font-weight: 700;
@@ -154,7 +154,7 @@
   color: var(--text-primary);
 }
 
-/* ── Message bubbles ─────────────────────────────────────────────── */
+/*Message bubbles*/
 .messageRow {
   display: flex;
   gap: 8px;
@@ -185,7 +185,7 @@
 
 .messageBubble.userBubble {
   background: linear-gradient(135deg, var(--cyan-deep), var(--cyan-primary));
-  color: #000;
+  color: #F8FAFC;
   border-radius: 12px 4px 12px 12px;
   font-weight: 500;
 }
@@ -196,7 +196,11 @@
   color: var(--text-primary);
 }
 
-/* ── Typing indicator ────────────────────────────────────────────── */
+.messageBubble.aiBubble li {
+  color: var(--text-secondary);
+}
+
+/*Typing indicator*/
 .typingIndicator {
   display: flex;
   gap: 8px;
@@ -224,7 +228,7 @@
 .typingDot:nth-child(2) { animation-delay: 0.2s; }
 .typingDot:nth-child(3) { animation-delay: 0.4s; }
 
-/* ── Tab content panels ──────────────────────────────────────────── */
+/*Tab content panels*/
 .panelTitle {
   font-size: 0.62rem;
   font-weight: 700;
@@ -265,7 +269,7 @@
   color: var(--text-primary);
 }
 
-/* ── Input area ──────────────────────────────────────────────────── */
+/*Input area*/
 .inputArea {
   padding: var(--s3) var(--s4) var(--s4);
   border-top: 1px solid var(--border-light);

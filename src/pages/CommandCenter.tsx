@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   TrendingUp, CheckCircle, AlertTriangle, Activity,
   GitBranch, Sparkles, BarChart2, RefreshCw, Loader2, Cpu, DollarSign, Zap,
-  Trash2, Upload, Database, Target, FileText, Clock,
+  Trash2, Upload, Database, FileText, Clock,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -12,7 +12,7 @@ import { api } from '../data/api';
 import type { SummaryResponse, DetectionStatus, UploadAnalytics, UploadHistoryResponse } from '../data/api';
 import styles from './CommandCenter.module.css';
 
-/* ─── Custom bar tooltip ─────────────────────────────────────────── */
+/*Custom bar tooltip*/
 const BarTip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
@@ -31,7 +31,7 @@ const BarTip = ({ active, payload, label }: any) => {
   );
 };
 
-/* ─── Animated progress bar ─────────────────────────────────────── */
+/*Animated progress bar*/
 const ProgressBar = ({ pct, color }: { pct: number; color: string }) => (
   <div className={styles.progressTrack}>
     <div
@@ -41,14 +41,14 @@ const ProgressBar = ({ pct, color }: { pct: number; color: string }) => (
   </div>
 );
 
-/* ════════════════════════ COMPONENT ════════════════════════════════ */
+/*COMPONENT*/
 const CommandCenter: React.FC = () => {
   const [data,    setData]    = useState<SummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [detStatus, setDetStatus] = useState<DetectionStatus | null>(null);
-  const [uploadData, setUploadData] = useState<UploadAnalytics | null>(null);
+  const [, setUploadData] = useState<UploadAnalytics | null>(null);
   const [history, setHistory] = useState<UploadHistoryResponse | null>(null);
   const [clearing, setClearing] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -171,7 +171,7 @@ const CommandCenter: React.FC = () => {
   return (
     <div className={styles.page}>
 
-      {/* ── Page header ───────────────────────────────────────────── */}
+      {/*Page header*/}
       <div className={styles.pageHeader}>
         <div className={styles.pageTitleGroup}>
           <div className={styles.pageEyebrow}>Security &amp; Cost Intelligence</div>
@@ -256,7 +256,6 @@ const CommandCenter: React.FC = () => {
               {STEPS.map(s => {
                 const isDone    = cur > s.n || (done && cur === s.n) || (done);
                 const isActive  = running && cur === s.n;
-                const isPending = !isDone && !isActive;
                 return (
                   <div key={s.n} className={`${styles.detStep} ${isDone ? styles.detStepDone : isActive ? styles.detStepActive : styles.detStepPending}`}>
                     <div className={styles.detStepIconWrap}>

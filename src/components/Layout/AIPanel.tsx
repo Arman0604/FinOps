@@ -7,15 +7,15 @@ import { api } from '../../data/api';
 import type { ChatMessage } from '../../data/api';
 import styles from './AIPanel.module.css';
 
-/* ─── Quick prompts ─────────────────────────────────────────────── */
+/*Quick prompts*/
 const QUICK_PROMPTS = [
-  { icon: '📈', text: 'Why did costs spike last week?' },
-  { icon: '💸', text: 'Which team overspent budget this month?' },
-  { icon: '🔁', text: 'What if we switch EC2 to reserved?' },
-  { icon: '🔮', text: 'What does the 30-day forecast look like?' },
+  { icon: 'TREND', text: 'Why did costs spike last week?' },
+  { icon: 'COST', text: 'Which team overspent budget this month?' },
+  { icon: 'SIM', text: 'What if we switch EC2 to reserved?' },
+  { icon: '30D', text: 'What does the 30-day forecast look like?' },
 ];
 
-/* ─── Markdown renderer ─────────────────────────────────────────── */
+/*Markdown renderer*/
 function renderMarkdown(text: string) {
   return text.split('\n').map((line, i) => {
     const parts = line.split(/\*\*(.*?)\*\*/g).map((p, j) =>
@@ -29,7 +29,7 @@ function renderMarkdown(text: string) {
   });
 }
 
-/* ─── Bubble ────────────────────────────────────────────────────── */
+/*Bubble*/
 const Bubble: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
   const isUser = msg.role === 'user';
   return (
@@ -39,7 +39,7 @@ const Bubble: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
         style={{
           background: isUser ? 'linear-gradient(135deg, var(--cyan-deep), var(--cyan-primary))' : 'rgba(139,92,246,0.15)',
           border: isUser ? 'none' : '1px solid rgba(139,92,246,0.25)',
-          color: isUser ? '#000' : 'var(--violet)',
+          color: isUser ? '#F8FAFC' : 'var(--violet)',
         }}
       >
         {isUser ? 'U' : <Bot size={12} />}
@@ -51,12 +51,12 @@ const Bubble: React.FC<{ msg: ChatMessage }> = ({ msg }) => {
   );
 };
 
-/* ═══════════════ AI PANEL ══════════════════════════════════════════ */
+/*AI PANEL*/
 const AIPanel: React.FC = () => {
   const [collapsed,  setCollapsed]  = useState(false);
   const [messages,   setMessages]   = useState<ChatMessage[]>([{
     role: 'assistant',
-    content: "👋 Hi! I'm your FinOps AI. Ask me about cost spikes, team budgets, what-if scenarios, or forecasts.",
+    content: "Hi, I'm your FinOps AI. Ask me about cost spikes, team budgets, what-if scenarios, or forecasts.",
   }]);
   const [inputText, setInputText] = useState('');
   const [loading,   setLoading]   = useState(false);
@@ -81,7 +81,7 @@ const AIPanel: React.FC = () => {
     } catch (err) {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `❌ ${err instanceof Error ? err.message : 'Failed to reach AI service.'}`,
+        content: `AI request failed: ${err instanceof Error ? err.message : 'Failed to reach AI service.'}`,
       }]);
     } finally {
       setLoading(false);
@@ -95,7 +95,7 @@ const AIPanel: React.FC = () => {
 
   const clearChat = () => setMessages([{
     role: 'assistant',
-    content: "👋 Chat cleared! Ask me anything about your cloud costs.",
+    content: "Chat cleared. Ask me anything about your cloud costs.",
   }]);
 
   /* Collapsed */
@@ -135,7 +135,7 @@ const AIPanel: React.FC = () => {
   return (
     <aside className={styles.aiPanel}>
 
-      {/* ── Header ────────────────────────────────────────────────── */}
+      {/*Header*/}
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <div className={styles.title}>
@@ -147,11 +147,11 @@ const AIPanel: React.FC = () => {
           </button>
         </div>
         <div className={styles.subtitle}>
-          Assistant: <span className={styles.assistantName}>Gemini FinOps Agent</span>
+          Assistant: <span className={styles.assistantName}>FinOps AI Agent</span>
         </div>
       </div>
 
-      {/* ── Tabs ──────────────────────────────────────────────────── */}
+      {/*Tabs*/}
       <div className={styles.tabBar}>
         {TABS.map(tab => (
           <button
@@ -165,12 +165,12 @@ const AIPanel: React.FC = () => {
         ))}
       </div>
 
-      {/* ── Content ───────────────────────────────────────────────── */}
+      {/*Content*/}
       <div className={styles.content} id="ai-chat-scroll">
 
         {activeTab === 'chat' && (
           <>
-            {/* Quick prompts (only when no user msgs) */}
+            {/* Quick prompts*/}
             {messages.length === 1 && (
               <div>
                 <div className={styles.quickPromptsLabel}>Quick Prompts</div>
@@ -215,12 +215,12 @@ const AIPanel: React.FC = () => {
         {activeTab === 'log' && (
           <div>
             <div className={styles.panelTitle}>Conversation Log</div>
-            {messages.filter((m, i) => i > 0).map((m, i) => (
+            {messages.slice(1).map((m, i) => (
               <div key={i} className={styles.logEntry}>
                 <span style={{ color: m.role === 'user' ? 'var(--cyan-primary)' : 'var(--violet)', fontWeight: 700, fontSize: '0.68rem', fontFamily: 'var(--font-mono)' }}>
                   [{m.role.toUpperCase()}]
                 </span>{' '}
-                {m.content.slice(0, 130)}{m.content.length > 130 ? '…' : ''}
+                {m.content.slice(0, 130)}{m.content.length > 130 ? '...' : ''}
               </div>
             ))}
             {messages.length <= 1 && (
@@ -237,7 +237,7 @@ const AIPanel: React.FC = () => {
             </p>
             {['Why did costs spike this week?', 'What caused the EC2 anomaly?', 'Which team has the highest deviation?'].map(q => (
               <button key={q} className={styles.simBtn} onClick={() => { setActiveTab('chat'); sendMessage(q); }}>
-                💡 {q}
+                Ask: {q}
               </button>
             ))}
           </div>
@@ -256,18 +256,18 @@ const AIPanel: React.FC = () => {
                 onClick={() => { setActiveTab('chat'); sendMessage(q); }}
                 disabled={loading}
               >
-                🔁 {q}
+                Run: {q}
               </button>
             ))}
           </div>
         )}
       </div>
 
-      {/* ── Input ─────────────────────────────────────────────────── */}
+      {/*Input*/}
       <div className={styles.inputArea}>
         <div className={styles.inputMeta}>
           <span className={styles.inputMetaText}>
-            {loading ? '⏳ Thinking…' : `${messages.length - 1} msg${messages.length !== 2 ? 's' : ''}`}
+            {loading ? 'Thinking...' : `${messages.length - 1} msg${messages.length !== 2 ? 's' : ''}`}
           </span>
           <button className={styles.clearBtn} onClick={clearChat}>
             <RefreshCw size={10} /> Clear
@@ -279,7 +279,7 @@ const AIPanel: React.FC = () => {
             ref={inputRef}
             id="ai-chat-input"
             type="text"
-            placeholder="Ask AI Intelligence…"
+            placeholder="Ask AI Intelligence..."
             className={styles.aiInput}
             value={inputText}
             onChange={e => setInputText(e.target.value)}
