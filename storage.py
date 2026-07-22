@@ -138,6 +138,18 @@ CREATE TABLE IF NOT EXISTS upload_history (
     severity_breakdown TEXT             -- JSON object
 );
 
+-- Application users for JWT authentication
+CREATE TABLE IF NOT EXISTS app_users (
+    id              TEXT    PRIMARY KEY,
+    email           TEXT    NOT NULL UNIQUE,
+    name            TEXT    NOT NULL,
+    company         TEXT,
+    password_hash   TEXT    NOT NULL,
+    role            TEXT    NOT NULL DEFAULT 'admin',
+    created_at      TEXT    NOT NULL,
+    last_login_at   TEXT
+);
+
 -- Performance indexes
 CREATE INDEX IF NOT EXISTS idx_daily_date     ON daily_billing(date);
 CREATE INDEX IF NOT EXISTS idx_daily_provider ON daily_billing(provider, date);
@@ -145,6 +157,7 @@ CREATE INDEX IF NOT EXISTS idx_daily_team     ON daily_billing(team, date);
 CREATE INDEX IF NOT EXISTS idx_daily_service  ON daily_billing(service, date);
 CREATE INDEX IF NOT EXISTS idx_anomaly_date   ON detected_anomalies(date);
 CREATE INDEX IF NOT EXISTS idx_forecast_date  ON forecasts(target_date, horizon);
+CREATE INDEX IF NOT EXISTS idx_users_email    ON app_users(email);
 """
 
 

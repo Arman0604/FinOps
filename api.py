@@ -27,9 +27,16 @@ from __future__ import annotations
 import sys
 import logging
 import json
+import os
+import base64
+import hashlib
+import hmac
+import secrets
+import time
+import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, date, timedelta
-from typing import Optional
+from typing import Optional, Any
 
 # ── stdout UTF-8 on Windows ───────────────────────────────────────────────────
 try:
@@ -38,9 +45,10 @@ except AttributeError:
     pass
 
 # ── FastAPI / Pydantic ────────────────────────────────────────────────────────
-from fastapi import FastAPI, Query, BackgroundTasks, HTTPException
+from fastapi import FastAPI, Query, BackgroundTasks, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 import pandas as pd
 import numpy as np
@@ -63,12 +71,213 @@ logging.basicConfig(
 log = logging.getLogger("api")
 
 
+# =============================================================================
+#  Auth helpers
+# =============================================================================
+
+JWT_ALGORITHM = "HS256"
+JWT_SECRET = os.getenv("JWT_SECRET_KEY") or os.getenv("SECRET_KEY") or "finops-dev-secret-change-me"
+JWT_TTL_MINUTES = int(os.getenv("JWT_TTL_MINUTES", "120"))
+PASSWORD_ITERATIONS = 260_000
+
+PUBLIC_API_PATHS = {
+    "/api/health",
+    "/api/auth/login",
+    "/api/auth/register",
+}
+
+
+class AuthUser(BaseModel):
+    id: str
+    email: str
+    name: str
+    company: str | None = None
+    role: str = "admin"
+
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: str | None = None
+    company: str | None = None
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+def _b64url_encode(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def _b64url_decode(data: str) -> bytes:
+    padding = "=" * (-len(data) % 4)
+    return base64.urlsafe_b64decode(data + padding)
+
+
+def _json_b64(data: dict[str, Any]) -> str:
+    raw = json.dumps(data, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    return _b64url_encode(raw)
+
+
+def _sign_jwt(message: str) -> str:
+    signature = hmac.new(
+        JWT_SECRET.encode("utf-8"),
+        message.encode("ascii"),
+        hashlib.sha256,
+    ).digest()
+    return _b64url_encode(signature)
+
+
+def _create_access_token(user: dict[str, Any]) -> str:
+    now = int(time.time())
+    payload = {
+        "sub": user["id"],
+        "email": user["email"],
+        "name": user["name"],
+        "company": user.get("company"),
+        "role": user.get("role", "admin"),
+        "iat": now,
+        "exp": now + JWT_TTL_MINUTES * 60,
+        "jti": secrets.token_urlsafe(16),
+    }
+    header = {"alg": JWT_ALGORITHM, "typ": "JWT"}
+    signing_input = f"{_json_b64(header)}.{_json_b64(payload)}"
+    return f"{signing_input}.{_sign_jwt(signing_input)}"
+
+
+def _decode_access_token(token: str) -> dict[str, Any]:
+    try:
+        header_b64, payload_b64, signature = token.split(".")
+        signing_input = f"{header_b64}.{payload_b64}"
+        expected_signature = _sign_jwt(signing_input)
+        if not hmac.compare_digest(signature, expected_signature):
+            raise ValueError("Invalid token signature")
+
+        header = json.loads(_b64url_decode(header_b64))
+        if header.get("alg") != JWT_ALGORITHM:
+            raise ValueError("Unsupported token algorithm")
+
+        payload = json.loads(_b64url_decode(payload_b64))
+        if int(payload.get("exp", 0)) < int(time.time()):
+            raise ValueError("Token has expired")
+        return payload
+    except Exception as exc:
+        raise HTTPException(status_code=401, detail="Invalid or expired token") from exc
+
+
+def _hash_password(password: str) -> str:
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt,
+        PASSWORD_ITERATIONS,
+    )
+    return "$".join(
+        [
+            "pbkdf2_sha256",
+            str(PASSWORD_ITERATIONS),
+            _b64url_encode(salt),
+            _b64url_encode(digest),
+        ]
+    )
+
+
+def _verify_password(password: str, encoded: str) -> bool:
+    try:
+        algorithm, iterations, salt_b64, digest_b64 = encoded.split("$", 3)
+        if algorithm != "pbkdf2_sha256":
+            return False
+        digest = hashlib.pbkdf2_hmac(
+            "sha256",
+            password.encode("utf-8"),
+            _b64url_decode(salt_b64),
+            int(iterations),
+        )
+        return hmac.compare_digest(_b64url_encode(digest), digest_b64)
+    except Exception:
+        return False
+
+
+def _normalize_email(email: str) -> str:
+    email = email.strip().lower()
+    if "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(status_code=400, detail="Enter a valid company email address")
+    return email
+
+
+def _public_user(row) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "email": row["email"],
+        "name": row["name"],
+        "company": row["company"],
+        "role": row["role"],
+    }
+
+
+def _auth_response(user: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "access_token": _create_access_token(user),
+        "token_type": "bearer",
+        "expires_in": JWT_TTL_MINUTES * 60,
+        "user": user,
+    }
+
+
+def _ensure_auth_schema() -> None:
+    with get_conn(DB_PATH) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS app_users (
+                id              TEXT    PRIMARY KEY,
+                email           TEXT    NOT NULL UNIQUE,
+                name            TEXT    NOT NULL,
+                company         TEXT,
+                password_hash   TEXT    NOT NULL,
+                role            TEXT    NOT NULL DEFAULT 'admin',
+                created_at      TEXT    NOT NULL,
+                last_login_at   TEXT
+            )
+            """
+        )
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_users_email ON app_users(email)")
+
+
+def _current_user_from_request(request: Request) -> AuthUser:
+    auth_header = request.headers.get("authorization", "")
+    scheme, _, token = auth_header.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        raise HTTPException(status_code=401, detail="Missing bearer token")
+
+    payload = _decode_access_token(token)
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token subject")
+
+    with get_conn(DB_PATH) as conn:
+        row = conn.execute(
+            "SELECT id, email, name, company, role FROM app_users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+
+    if row is None:
+        raise HTTPException(status_code=401, detail="User no longer exists")
+
+    return AuthUser(**_public_user(row))
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  App lifecycle
 # ══════════════════════════════════════════════════════════════════════════════
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _ensure_auth_schema()
+    if JWT_SECRET == "finops-dev-secret-change-me":
+        log.warning("JWT_SECRET_KEY is not set; using the development JWT secret.")
     log.info("FinOps API starting — connected to %s", DB_PATH)
     yield
     log.info("FinOps API shutting down")
@@ -93,6 +302,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def require_jwt_for_api(request: Request, call_next):
+    path = request.url.path
+    if request.method == "OPTIONS" or not path.startswith("/api/") or path in PUBLIC_API_PATHS:
+        return await call_next(request)
+
+    try:
+        request.state.user = _current_user_from_request(request)
+    except HTTPException as exc:
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+    return await call_next(request)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -142,6 +365,65 @@ def _prev_month_end() -> str:
 def health():
     """Liveness probe."""
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
+
+
+@app.post("/api/auth/register", tags=["auth"])
+def register(req: RegisterRequest):
+    email = _normalize_email(req.email)
+    password = req.password or ""
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+
+    name = (req.name or email.split("@")[0]).strip()
+    company = (req.company or "").strip() or None
+    now = datetime.utcnow().isoformat()
+    user_id = str(uuid.uuid4())
+
+    try:
+        with get_conn(DB_PATH) as conn:
+            conn.execute(
+                """
+                INSERT INTO app_users
+                    (id, email, name, company, password_hash, role, created_at, last_login_at)
+                VALUES (?, ?, ?, ?, ?, 'admin', ?, ?)
+                """,
+                (user_id, email, name, company, _hash_password(password), now, now),
+            )
+            row = conn.execute(
+                "SELECT id, email, name, company, role FROM app_users WHERE id = ?",
+                (user_id,),
+            ).fetchone()
+    except Exception as exc:
+        if "UNIQUE constraint failed" in str(exc):
+            raise HTTPException(status_code=409, detail="An account already exists for this email") from exc
+        raise
+
+    return _auth_response(_public_user(row))
+
+
+@app.post("/api/auth/login", tags=["auth"])
+def login(req: LoginRequest):
+    email = _normalize_email(req.email)
+    with get_conn(DB_PATH) as conn:
+        row = conn.execute(
+            "SELECT * FROM app_users WHERE email = ?",
+            (email,),
+        ).fetchone()
+
+        if row is None or not _verify_password(req.password or "", row["password_hash"]):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+
+        conn.execute(
+            "UPDATE app_users SET last_login_at = ? WHERE id = ?",
+            (datetime.utcnow().isoformat(), row["id"]),
+        )
+
+    return _auth_response(_public_user(row))
+
+
+@app.get("/api/auth/me", tags=["auth"])
+def me(request: Request):
+    return {"user": request.state.user.model_dump()}
 
 
 # ══════════════════════════════════════════════════════════════════════════════

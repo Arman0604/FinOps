@@ -5,10 +5,70 @@
 // ------------------------------------------------------------------
 
 const BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "http://localhost:8000" : "");
+const TOKEN_KEY = "finops.auth.token";
+const USER_KEY = "finops.auth.user";
 
 function apiUrl(path: string): string {
   const base = BASE || window.location.origin;
   return new URL(path, base).toString();
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  company: string | null;
+  role: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: "bearer";
+  expires_in: number;
+  user: AuthUser;
+}
+
+export function getAuthToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function getStoredUser(): AuthUser | null {
+  const raw = localStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    clearAuthSession();
+    return null;
+  }
+}
+
+export function setAuthSession(auth: AuthResponse): void {
+  localStorage.setItem(TOKEN_KEY, auth.access_token);
+  localStorage.setItem(USER_KEY, JSON.stringify(auth.user));
+}
+
+export function clearAuthSession(): void {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+}
+
+function authHeaders(headers: Record<string, string> = {}): Record<string, string> {
+  const token = getAuthToken();
+  return token ? { ...headers, Authorization: `Bearer ${token}` } : headers;
+}
+
+async function handleResponse<T>(res: Response): Promise<T> {
+  if (res.ok) return res.json() as Promise<T>;
+
+  if (res.status === 401) {
+    clearAuthSession();
+    window.dispatchEvent(new Event("finops:auth-expired"));
+  }
+
+  const body = await res.json().catch(async () => ({ detail: await res.text().catch(() => res.statusText) }));
+  const message = body.detail || body.message || `API ${res.status}`;
+  throw new Error(Array.isArray(message) ? message.map((m) => m.msg ?? String(m)).join(", ") : String(message));
 }
 
 async function get<T>(path: string, params?: Record<string, string | number | undefined>): Promise<T> {
@@ -18,19 +78,17 @@ async function get<T>(path: string, params?: Record<string, string | number | un
       if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
     });
   }
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
-  return res.json() as Promise<T>;
+  const res = await fetch(url.toString(), { headers: authHeaders() });
+  return handleResponse<T>(res);
 }
 
 async function post<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(apiUrl(path), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders({ "Content-Type": "application/json" }),
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
-  return res.json() as Promise<T>;
+  return handleResponse<T>(res);
 }
 
 // ---------- Types --------------------------------------------------------
@@ -211,6 +269,11 @@ export interface UploadHistoryResponse {
 // ---------- Exports --------------------------------------------------------
 
 export const api = {
+  login:        (email: string, password: string) =>
+    post<AuthResponse>("/api/auth/login", { email, password }),
+  register:     (payload: { email: string; password: string; name?: string; company?: string }) =>
+    post<AuthResponse>("/api/auth/register", payload),
+  me:           () => get<{ user: AuthUser }>("/api/auth/me"),
   summary:      ()                               => get<SummaryResponse>("/api/summary"),
   anomalies:    (params?: Record<string, string | number | undefined>) => get<AnomaliesResponse>("/api/anomalies", params),
   forecast:     (horizon = 30, model = "ensemble", filters?: { provider?: string; team?: string; service?: string }) =>
@@ -231,12 +294,12 @@ export const api = {
   uploadCSV: async (file: File): Promise<{ status: string; message: string; filename: string; total_rows: number }> => {
     const form = new FormData();
     form.append("file", file);
-    const res = await fetch(`${BASE}/api/upload-csv`, { method: "POST", body: form });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({ message: res.statusText }));
-      throw new Error(body.message || `Upload failed: ${res.status}`);
-    }
-    return res.json();
+    const res = await fetch(apiUrl("/api/upload-csv"), {
+      method: "POST",
+      headers: authHeaders(),
+      body: form,
+    });
+    return handleResponse(res);
   },
   uploadStatus:       () => get<UploadStatus>("/api/upload-status"),
   uploadReset:        () => post<{ status: string; message: string }>("/api/upload-reset"),

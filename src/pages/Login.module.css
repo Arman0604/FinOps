@@ -67,6 +67,16 @@
   border-color: var(--cyan-primary);
 }
 
+.error {
+  padding: 0.75rem;
+  border: 1px solid rgba(239, 68, 68, 0.32);
+  border-radius: var(--r-md);
+  background: var(--alert-red-bg);
+  color: var(--alert-red);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
 .footer {
   margin-top: 1.5rem;
   text-align: center;
@@ -87,4 +97,9 @@
 .linkButton:hover {
   text-decoration: underline;
   color: var(--cyan-deep);
+}
+
+.linkButton:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
 }

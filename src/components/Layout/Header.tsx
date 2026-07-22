@@ -4,7 +4,7 @@ import {
   Search, Bell, User, Settings, LogOut, ChevronDown,
   AlertTriangle, Zap, TrendingUp, X, Shield,
 } from 'lucide-react';
-import { api } from '../../data/api';
+import { api, clearAuthSession, getStoredUser } from '../../data/api';
 import type { AnomalyItem } from '../../data/api';
 import styles from './Header.module.css';
 
@@ -21,8 +21,13 @@ const Header: React.FC = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [anomalies, setAnomalies]     = useState<AnomalyItem[]>([]);
   const [anomCount, setAnomCount]     = useState(0);
+  const [nowMs, setNowMs]             = useState(0);
+  const [user] = useState(() => getStoredUser());
   const notifRef   = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const displayName = user?.name || 'FinOps Admin';
+  const displayEmail = user?.email || 'admin@cognifinops.io';
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=0891B2&color=fff&bold=true`;
 
   // Load anomalies for notification bell
   const loadNotifications = useCallback(async () => {
@@ -30,10 +35,13 @@ const Header: React.FC = () => {
       const res = await api.anomalies({ limit: 5 });
       setAnomalies(res.items.slice(0, 5));
       setAnomCount(res.total);
+      setNowMs(Date.now());
     } catch { /* ignore */ }
   }, []);
 
-  useEffect(() => { loadNotifications(); }, [loadNotifications]);
+  useEffect(() => {
+    void Promise.resolve().then(loadNotifications);
+  }, [loadNotifications]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -46,12 +54,18 @@ const Header: React.FC = () => {
   }, []);
 
   const timeSince = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
+    if (!nowMs) return '';
+    const diff = nowMs - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 60) return `${mins}m ago`;
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs}h ago`;
     return `${Math.floor(hrs / 24)}d ago`;
+  };
+
+  const signOut = () => {
+    clearAuthSession();
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -158,11 +172,11 @@ const Header: React.FC = () => {
           >
             <div className={styles.avatar}>
               <img
-                src="https://ui-avatars.com/api/?name=FinOps+Admin&background=0891B2&color=fff&bold=true"
+                src={avatarUrl}
                 alt="User"
               />
             </div>
-            <span className={styles.avatarName}>Admin</span>
+            <span className={styles.avatarName}>{displayName.split(' ')[0]}</span>
             <ChevronDown size={12} className={`${styles.avatarChevron} ${profileOpen ? styles.avatarChevronOpen : ''}`} />
           </div>
 
@@ -171,13 +185,13 @@ const Header: React.FC = () => {
               <div className={styles.profileHeader}>
                 <div className={styles.profileAvatar}>
                   <img
-                    src="https://ui-avatars.com/api/?name=FinOps+Admin&background=0891B2&color=fff&bold=true&size=64"
+                    src={`${avatarUrl}&size=64`}
                     alt="User"
                   />
                 </div>
                 <div>
-                  <div className={styles.profileName}>FinOps Admin</div>
-                  <div className={styles.profileEmail}>admin@cognifinops.io</div>
+                  <div className={styles.profileName}>{displayName}</div>
+                  <div className={styles.profileEmail}>{displayEmail}</div>
                 </div>
               </div>
 
@@ -201,7 +215,7 @@ const Header: React.FC = () => {
               <div className={styles.profileDivider} />
 
               <div className={styles.profileMenu}>
-                <button className={`${styles.profileMenuItem} ${styles.profileMenuDanger}`}>
+                <button className={`${styles.profileMenuItem} ${styles.profileMenuDanger}`} onClick={signOut}>
                   <LogOut size={14} /> Sign Out
                 </button>
               </div>
