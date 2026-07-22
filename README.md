@@ -2,7 +2,7 @@
 
 FinOps is a cloud cost intelligence platform. It helps teams understand cloud spending, spot unusual cost spikes, forecast future spend, track budgets, and ask AI questions about the data in simple language.
 
-Live project: [https://finops-jade.vercel.app](https://finops-jade.vercel.app)
+Live project: [https://finops-arman0604-arman0604s-projects.vercel.app/](https://finops-arman0604-arman0604s-projects.vercel.app/)
 
 ## What This Project Does
 
